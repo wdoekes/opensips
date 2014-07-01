@@ -1236,8 +1236,8 @@ Chapter 3. Frequently Asked Questions
 
        What happened with old cancel_call() function
 
-       The function was replace (as functionality) by
-       cancel_branch("a") - cancel all braches.
+       The function was replaced (as functionality) by
+       cancel_branch("a") - cancel all branches.
 
    3.2.
 
