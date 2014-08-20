@@ -43,6 +43,9 @@ typedef int (cb_function)( struct sip_msg *msg, void *param );
 #define RPL_TYPE_CB      (1<<3)
 #define PARSE_ERR_CB     (1<<4)
 
+typedef int (*raw_processing_func)(str *data);
+#define PRE_RAW_PROCESSING  (1<<0)
+#define POST_RAW_PROCESSING (1<<1)
 
 struct script_cb{
 	cb_function *cbf;
@@ -61,6 +64,9 @@ int exec_pre_rpl_cb( struct sip_msg *msg);
 int exec_post_rpl_cb( struct sip_msg *msg);
 
 int exec_parse_err_cb( struct sip_msg *msg);
+
+int register_raw_processing_cb(raw_processing_func f, int type);
+int run_raw_processing_cb(int type, str *data);
 
 #endif
 
