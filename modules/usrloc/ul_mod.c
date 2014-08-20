@@ -52,6 +52,7 @@
 #include "../../timer.h"     /* register_timer */
 #include "../../globals.h"   /* is_main */
 #include "../../ut.h"        /* str_init */
+#include "../../socket_info.h" /* udp_listen and friends */
 #include "dlist.h"           /* register_udomain */
 #include "udomain.h"         /* {insert,delete,get,release}_urecord */
 #include "urecord.h"         /* {insert,delete,get}_ucontact */
@@ -86,6 +87,9 @@ static void timer(unsigned int ticks, void* param); /*!< Timer handler */
 static int child_init(int rank);                    /*!< Per-child init function */
 static int mi_child_init(void);
 
+static void init_sockaddr_list_str();
+static void free_sockaddr_list_str();
+
 extern int bind_usrloc(usrloc_api_t* api);
 extern int ul_locks_no;
 extern rw_lock_t *sync_lock;
@@ -111,6 +115,7 @@ str last_mod_col    = str_init(LAST_MOD_COL);		/*!< Name of column containing th
 str attr_col        = str_init(ATTR_COL);		/*!< Name of column containing additional info */
 str sip_instance_col = str_init(SIP_INSTANCE_COL);
 str db_url          = {NULL, 0};					/*!< Database URL */
+str sockaddr_list_str = {NULL, 0};
 int timer_interval  = 60;				/*!< Timer interval in seconds */
 int db_mode         = 0;				/*!< Database sync scheme: 0-no db, 1-write through, 2-write back, 3-only db */
 int use_domain      = 0;				/*!< Whether usrloc should use domain part of aor */
@@ -290,6 +295,8 @@ static int mod_init(void)
 		}
 	}
 
+	init_sockaddr_list_str();
+
 	fix_flag_name(nat_bflag_str, nat_bflag);
 
 	nat_bflag = get_flag_id_by_name(FLAG_TYPE_BRANCH, nat_bflag_str);
@@ -384,6 +391,8 @@ static int mi_child_init(void)
  */
 static void destroy(void)
 {
+	free_sockaddr_list_str();
+
 	/* we need to sync DB in order to flush the cache */
 	if (ul_dbh) {
 		ul_unlock_locks();
@@ -422,3 +431,76 @@ static void timer(unsigned int ticks, void* param)
 		lock_stop_read(sync_lock);
 }
 
+/*! \brief
+ * Initialize a list of listen addresses for use by the natping query
+ */
+static void init_sockaddr_list_str()
+{
+	struct socket_info *si;
+	struct socket_info *lists[5];
+	int lists_len = 0;
+	int i;
+
+	int addresses = 0;
+	int buflen = 0;
+	char *p;
+
+	if (udp_listen)
+		lists[lists_len++] = udp_listen;
+#ifdef USE_TCP
+	if (tcp_listen)
+		lists[lists_len++] = tcp_listen;
+#endif
+#ifdef USE_TLS
+	if (tls_listen)
+		lists[lists_len++] = tls_listen;
+#endif
+#ifdef USE_SCTP
+	if (sctp_listen)
+		lists[lists_len++] = sctp_listen;
+#endif
+
+	for (i = 0; i < lists_len; ++i) {
+		for (si = lists[i]; si; si = si->next) {
+			buflen += si->sock_str.len;
+			addresses++;
+		}
+	}
+	buflen += 1 /*'*/ + 3 * (addresses - 1) /*','*/ + 2 /*'NUL*/;
+
+	/* No addresses? */
+	if (!addresses) {
+		sockaddr_list_str.s = NULL;
+		sockaddr_list_str.len = 0;
+		return;
+	}
+
+	p = sockaddr_list_str.s = shm_malloc(buflen);
+	if (!p) {
+		LM_ERR("No memory for sockaddr_list_str.s!\n");
+		sockaddr_list_str.s = NULL;
+		sockaddr_list_str.len = 0;
+		return;
+	}
+
+	for (i = 0; i < lists_len; ++i) {
+		for (si = lists[i]; si; si = si->next) {
+			*p++ = '\'';
+			memcpy(p, si->sock_str.s, si->sock_str.len);
+			p += si->sock_str.len;
+			*p++ = '\'';
+			*p++ = ',';
+		}
+	}
+	*--p = '\0';
+	sockaddr_list_str.len = p - sockaddr_list_str.s;
+
+	LM_ERR("init-test: %s (%d)\n", sockaddr_list_str.s, sockaddr_list_str.len);
+}
+
+static void free_sockaddr_list_str()
+{
+	shm_free(sockaddr_list_str.s);
+	sockaddr_list_str.s = NULL;
+	sockaddr_list_str.len = 0;
+}

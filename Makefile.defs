@@ -530,12 +530,15 @@ ifneq ($(SCTP),)
 	DEFS+= -DUSE_SCTP
 endif
 
-ifeq ($(mode),)
+ifeq ($(mode),release)
 	mode = release
+else
+	mode = debug
 endif
 
 ifeq ($(mode),debug)
-	DEFS+= -DEXTRA_DEBUG
+	# Disabled! The damocles stuff breaks more than it fixes.
+	#DEFS+= -DEXTRA_DEBUG
 endif
 
 # platform dependent settings

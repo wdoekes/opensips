@@ -423,9 +423,13 @@ int db_insert_ucontact(ucontact_t* _c,query_list_t **ins_list, int update)
 	keys[11] = &sock_col;
 	keys[12] = &methods_col;
 	keys[13] = &last_mod_col;
+#if 0 /* disabled for VG */
 	keys[14] = &sip_instance_col;
 	keys[15] = &attr_col;
 	keys[16] = &domain_col;
+#else
+	keys[14] = &domain_col;
+#endif
 
 	vals[0].type = DB_STR;
 	vals[0].nul = 0;
@@ -458,9 +462,15 @@ int db_insert_ucontact(ucontact_t* _c,query_list_t **ins_list, int update)
 	vals[6].nul = 0;
 	vals[6].val.bitmap_val = _c->flags;
 
+#if 0 /* disabled for VG */
 	vals[7].type = DB_STR;
 	vals[7].nul = 0;
 	vals[7].val.str_val = bitmask_to_flag_list(FLAG_TYPE_BRANCH, _c->cflags);
+#else
+	vals[7].type = DB_INT;
+	vals[7].nul = 0;
+	vals[7].val.bitmap_val = _c->cflags;
+#endif
 
 	vals[8].type = DB_STR;
 	vals[8].nul = 0;
@@ -506,6 +516,7 @@ int db_insert_ucontact(ucontact_t* _c,query_list_t **ins_list, int update)
 	vals[13].nul = 0;
 	vals[13].val.time_val = _c->last_modified;
 
+#if 0 /* disabled for VG */
 	vals[14].type = DB_STR;
 	if (_c->instance.s == 0) {
 		vals[14].nul = 1;
@@ -523,19 +534,25 @@ int db_insert_ucontact(ucontact_t* _c,query_list_t **ins_list, int update)
 		vals[15].val.str_val.s = _c->attr.s;
 		vals[15].val.str_val.len = _c->attr.len;
 	}
+#endif
 
 	if (use_domain) {
+#if 0 /* disabled for VG */
 		vals[16].type = DB_STR;
 		vals[16].nul = 0;
+#else
+		vals[14].type = DB_STR;
+		vals[14].nul = 0;
+#endif
 
 		dom = q_memchr(_c->aor->s, '@', _c->aor->len);
 		if (dom==0) {
 			vals[0].val.str_val.len = 0;
-			vals[16].val.str_val = *_c->aor;
+			vals[14].val.str_val = *_c->aor;
 		} else {
 			vals[0].val.str_val.len = dom - _c->aor->s;
-			vals[16].val.str_val.s = dom + 1;
-			vals[16].val.str_val.len = _c->aor->s + _c->aor->len - dom - 1;
+			vals[14].val.str_val.s = dom + 1;
+			vals[14].val.str_val.len = _c->aor->s + _c->aor->len - dom - 1;
 		}
 	}
 
@@ -549,18 +566,18 @@ int db_insert_ucontact(ucontact_t* _c,query_list_t **ins_list, int update)
 		CON_PS_REFERENCE(ul_dbh) = &myI_ps;
 		if (ins_list) {
 			if (con_set_inslist(&ul_dbf,ul_dbh,ins_list,keys,
-						(use_domain) ? (17) : (16)) < 0 )
+						(use_domain) ? (15) : (14)) < 0 )
 				CON_RESET_INSLIST(ul_dbh);
 		}
 
-		if (ul_dbf.insert(ul_dbh, keys, vals, (use_domain) ? (17) : (16)) < 0) {
+		if (ul_dbf.insert_update(ul_dbh, keys, vals, (use_domain) ? (15) : (14)) < 0) {
 			LM_ERR("inserting contact in db failed\n");
 			return -1;
 		}
 	} else {
 		/* do insert-update / replace */
 		CON_PS_REFERENCE(ul_dbh) = &myR_ps;
-		if (ul_dbf.insert_update(ul_dbh, keys, vals, (use_domain) ? (17) : (16)) < 0) {
+		if (ul_dbf.insert_update(ul_dbh, keys, vals, (use_domain) ? (15) : (14)) < 0) {
 			LM_ERR("inserting contact in db failed\n");
 			return -1;
 		}
@@ -580,8 +597,8 @@ int db_update_ucontact(ucontact_t* _c)
 	db_key_t keys1[4];
 	db_val_t vals1[4];
 
-	db_key_t keys2[12];
-	db_val_t vals2[12];
+	db_key_t keys2[11];
+	db_val_t vals2[11];
 
 	if (_c->flags & FL_MEM) {
 		return 0;
@@ -602,7 +619,9 @@ int db_update_ucontact(ucontact_t* _c)
 	keys2[8] = &sock_col;
 	keys2[9] = &methods_col;
 	keys2[10] = &last_mod_col;
+#if 0 /* disabled for VG */
 	keys2[11] = &attr_col;
+#endif
 
 	vals1[0].type = DB_STR;
 	vals1[0].nul = 0;
@@ -632,9 +651,15 @@ int db_update_ucontact(ucontact_t* _c)
 	vals2[3].nul = 0;
 	vals2[3].val.bitmap_val = _c->flags;
 
+#if 0 /* disabled for VG */
 	vals2[4].type = DB_STR;
 	vals2[4].nul = 0;
 	vals2[4].val.str_val = bitmask_to_flag_list(FLAG_TYPE_BRANCH, _c->cflags);
+#else
+	vals2[4].type = DB_INT;
+	vals2[4].nul = 0;
+	vals2[4].val.bitmap_val = _c->cflags;
+#endif
 
 	vals2[5].type = DB_STR;
 	vals2[5].nul = 0;
@@ -677,6 +702,7 @@ int db_update_ucontact(ucontact_t* _c)
 	vals2[10].nul = 0;
 	vals2[10].val.time_val = _c->last_modified;
 
+#if 0 /* disabled for VG */
 	vals2[11].type = DB_STR;
 	if (_c->attr.s == 0) {
 		vals2[11].nul = 1;
@@ -684,6 +710,7 @@ int db_update_ucontact(ucontact_t* _c)
 		vals2[11].nul = 0;
 		vals2[11].val.str_val = _c->attr;
 	}
+#endif
 
 	if (use_domain) {
 		vals1[3].type = DB_STR;

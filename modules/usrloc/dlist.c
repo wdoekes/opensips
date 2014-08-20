@@ -100,7 +100,10 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
                                 unsigned int part_idx, unsigned int part_max)
 {
 	static char query_buf[512];
+	static char query_extra[512];
 	static str query_str;
+
+	static char listen_buf[512];
 
 	struct socket_info *sock;
 	db_res_t *res = NULL;
@@ -130,6 +133,17 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
 
 	LM_DBG("buf: %p. flags: %d\n", buf, flags);
 
+	if (sockaddr_list_str.s) {
+		i = snprintf(query_extra, sizeof(query_extra), " and socket in (%s)",
+			sockaddr_list_str.s);
+		if (i >= sizeof(query_extra)) {
+			LM_WARN("listen interfaces list too large\n");
+			query_extra[0] = '\0';
+		}
+	} else {
+		query_extra[0] = '\0';
+	}
+
 	/* for each table */
 	for (dom = root; dom; dom = dom->next) {
 		if (db_check_table_version(&ul_dbf, ul_dbh, dom->d->name, UL_TABLE_VERSION))
@@ -144,9 +158,9 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
 
 		i = snprintf(query_buf, sizeof query_buf, "select %.*s, %.*s, %.*s,"
 #ifdef ORACLE_USRLOC
-		" %.*s, %.*s from %s where %.*s > %.*s and mod(id, %u) = %u",
+		" %.*s, %.*s from %s where %.*s > %.*s and mod(cseq, %u) = %u%s",
 #else
-		" %.*s, %.*s from %s where %.*s > %.*s and id %% %u = %u",
+		" %.*s, %.*s from %s where %.*s > %.*s and cseq %% %u = %u%s",
 #endif
 			received_col.len, received_col.s,
 			contact_col.len, contact_col.s,
@@ -156,7 +170,7 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
 			dom->d->name->s,
 			expires_col.len, expires_col.s,
 			now_len, now_s,
-			part_max, part_idx);
+			part_max, part_idx, query_extra);
 
 		LM_DBG("query: %.*s\n", (int)(sizeof query_buf), query_buf);
 		if (i >= sizeof query_buf) {
@@ -192,6 +206,7 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
 			for (i = 0; i < RES_ROW_N(res); i++) {
 				row = RES_ROWS(res) + i;
 				val = ROW_VALUES(row) + 3; /* cflags */
+#if 0 /* disabled for VG */
 				flag_list.s   = (char *)VAL_STRING(val);
 				flag_list.len = strlen(flag_list.s);
 
@@ -204,6 +219,9 @@ static int get_all_db_ucontacts(void *buf, int len, unsigned int flags,
 
 				dbflags = flag_list_to_bitmask(&flag_list,
 				                FLAG_TYPE_BRANCH, FLAG_DELIM);
+#else
+				dbflags = VAL_BITMAP(val);
+#endif
 
 				/* check if contact flags match the given bitmask */
 				if ((dbflags & flags) != flags)

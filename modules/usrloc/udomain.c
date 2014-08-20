@@ -250,7 +250,7 @@ void print_udomain(FILE* _f, udomain_t* _d)
 
 
 /*! \brief
- * expects 14 rows (contact, expires, q, callid, cseq, flags, cflags,
+ * expects 14 columns (contact, expires, q, callid, cseq, flags, cflags,
  *   ua, received, path, socket, methods, last_modified, instance)
  */
 static inline ucontact_info_t* dbrow2info( db_val_t *vals, str *contact)
@@ -302,11 +302,15 @@ static inline ucontact_info_t* dbrow2info( db_val_t *vals, str *contact)
 	ci.flags  = VAL_BITMAP(vals+5);
 
 	if (!VAL_NULL(vals+6)) {
+#if 0 /* disabled for VG */
 		flags.s   = (char *)VAL_STRING(vals+6);
 		flags.len = strlen(flags.s);
 		LM_DBG("flag str: '%.*s'\n", flags.len, flags.s);
 	
 		ci.cflags = flag_list_to_bitmask(&flags, FLAG_TYPE_BRANCH, FLAG_DELIM);
+#else
+		ci.cflags = VAL_BITMAP(vals+6);
+#endif
 	
 		LM_DBG("set flags: %d\n", ci.cflags);
 	}
@@ -366,6 +370,7 @@ static inline ucontact_info_t* dbrow2info( db_val_t *vals, str *contact)
 		ci.last_modified = VAL_TIME(vals+12);
 	}
 
+#if 0 /* disabled for VG */
 	instance.s  = (char*)VAL_STRING(vals+13);
 	if (VAL_NULL(vals+13) || !instance.s || !instance.s[0]) {
 		instance.len = 0;
@@ -373,8 +378,13 @@ static inline ucontact_info_t* dbrow2info( db_val_t *vals, str *contact)
 	} else {
 		instance.len = strlen(instance.s);
 	}
+#else
+	instance.s = NULL;
+	instance.len = 0;
+#endif
 	ci.instance = instance;
 
+#if 0 /* disabled for VG */
 	attr.s = (char*)VAL_STRING(vals+14);
 	if (VAL_NULL(vals+14) || !attr.s) {
 		attr.s = NULL;
@@ -383,6 +393,10 @@ static inline ucontact_info_t* dbrow2info( db_val_t *vals, str *contact)
 		attr.s = (char*)VAL_STRING(vals+14);
 		attr.len  = strlen(attr.s);
 	}
+#else
+	attr.s = NULL;
+	attr.len = 0;
+#endif
 	ci.attr = &attr;
 
 	return &ci;
@@ -421,9 +435,13 @@ int preload_udomain(db_con_t* _c, udomain_t* _d)
 	columns[11] = &sock_col;
 	columns[12] = &methods_col;
 	columns[13] = &last_mod_col;
+#if 0 /* disabled for VG */
 	columns[14] = &sip_instance_col;
 	columns[15] = &attr_col;
 	columns[16] = &domain_col;
+#else
+	columns[14] = &domain_col;
+#endif
 
 	if (ul_dbf.use_table(_c, _d->name) < 0) {
 		LM_ERR("sql use_table failed\n");
@@ -435,7 +453,7 @@ int preload_udomain(db_con_t* _c, udomain_t* _d)
 #endif
 
 	if (DB_CAPABILITY(ul_dbf, DB_CAP_FETCH)) {
-		if (ul_dbf.query(_c, 0, 0, 0, columns, 0, (use_domain)?(17):(16), 0,
+		if (ul_dbf.query(_c, 0, 0, 0, columns, 0, (use_domain)?(15):(14), 0,
 		0) < 0) {
 			LM_ERR("db_query (1) failed\n");
 			return -1;
@@ -448,7 +466,7 @@ int preload_udomain(db_con_t* _c, udomain_t* _d)
 			return -1;
 		}
 	} else {
-		if (ul_dbf.query(_c, 0, 0, 0, columns, 0, (use_domain)?(17):(16), 0,
+		if (ul_dbf.query(_c, 0, 0, 0, columns, 0, (use_domain)?(15):(14), 0,
 		&res) < 0) {
 			LM_ERR("db_query failed\n");
 			return -1;
@@ -484,8 +502,8 @@ int preload_udomain(db_con_t* _c, udomain_t* _d)
 			}
 
 			if (use_domain) {
-				domain = (char*)VAL_STRING(ROW_VALUES(row) + 16);
-				if (VAL_NULL(ROW_VALUES(row)+16) || domain==0 || domain[0]==0){
+				domain = (char*)VAL_STRING(ROW_VALUES(row) + 14);
+				if (VAL_NULL(ROW_VALUES(row)+14) || domain==0 || domain[0]==0){
 					LM_CRIT("empty domain record for user %.*s...skipping\n",
 							user.len, user.s);
 					continue;
@@ -584,8 +602,10 @@ urecord_t* db_load_urecord(db_con_t* _c, udomain_t* _d, str *_aor)
 	columns[10] = &sock_col;
 	columns[11] = &methods_col;
 	columns[12] = &last_mod_col;
+#if 0 /* disabled for VG */
 	columns[13] = &sip_instance_col;
 	columns[14] = &attr_col;
+#endif
 
 	if (desc_time_order)
 		order = &last_mod_col;
@@ -616,7 +636,7 @@ urecord_t* db_load_urecord(db_con_t* _c, udomain_t* _d, str *_aor)
 
 	/* CON_PS_REFERENCE(_c) = &my_ps; - this is still dangerous with STMT */
 
-	if (ul_dbf.query(_c, keys, 0, vals, columns, (use_domain)?2:1, 15, order,
+	if (ul_dbf.query(_c, keys, 0, vals, columns, (use_domain)?2:1, 13, order,
 				&res) < 0) {
 		LM_ERR("db_query failed\n");
 		return 0;

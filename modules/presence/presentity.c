@@ -520,6 +520,10 @@ int update_presentity(struct sip_msg* msg, presentity_t* presentity, int* sent_r
 
 		if(extra_hdrs)
 		{
+			// .. we should actually always do this, since MySQL
+			// doesn't do defaults on BLOB fields. On the other
+			// hand, this piece of code doesn't know that we're
+			// using MySQL.
 			query_cols[n_query_cols] = &str_extra_hdrs_col;
 			query_vals[n_query_cols].type = DB_BLOB;
 			query_vals[n_query_cols].nul = 0;
@@ -536,7 +540,7 @@ int update_presentity(struct sip_msg* msg, presentity_t* presentity, int* sent_r
 		LM_DBG("inserting %d cols into table\n",n_query_cols);
 
 		//CON_PS_REFERENCE(pa_db) = &my_ps_insert;
-		if (pa_dbf.insert(pa_db, query_cols, query_vals, n_query_cols) < 0) 
+		if (pa_dbf.insert_update(pa_db, query_cols, query_vals, n_query_cols) < 0)
 		{
 			LM_ERR("inserting new record in database\n");
 			goto error;
