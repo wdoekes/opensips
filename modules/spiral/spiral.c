@@ -331,7 +331,7 @@ static int spiral_add_cookie(struct sip_msg *msg, const str *cookie_header_value
 		return -1;
 	}
 
-	anchor = anchor_lump(msg, msg->unparsed - msg->buf, 0);
+	anchor = anchor_lump(msg, msg->unparsed - msg->buf, 0, 0);
 	if (anchor == 0) {
 		LM_ERR("can't get header anchor\n");
 		pkg_free(h.s);
@@ -358,7 +358,7 @@ static int spiral_add_cookie(struct sip_msg *msg, const str *cookie_header_value
 		if (msg->via1->port != 0)
 			pos += msg->via1->port_str.len + 1; /* +1 for ':' */
 	}
-	anchor = anchor_lump(msg, msg->via1->hdr.s - msg->buf + pos, 0);
+	anchor = anchor_lump(msg, msg->via1->hdr.s - msg->buf + pos, 0, 0);
 	if (anchor == 0) {
 		LM_ERR("can't get Via anchor\n");
 		return -1;
