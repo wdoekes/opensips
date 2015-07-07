@@ -1013,6 +1013,15 @@ static void db_update(unsigned int ticks,void *param)
 					q_vals[remote_contact_col].val.str_val = p->remote_contact;
 					q_vals[extra_headers_col].val.str_val = p->extra_headers;
 
+					if (q_vals[touri_col].val.str_val.s == NULL &&
+							q_vals[touri_col].val.str_val.len != 0) {
+						LM_ERR("LEVEN GERED! callid=%.*s to_uri=0/%d\n",
+							q_vals[callid_col].val.str_val.len,
+							q_vals[callid_col].val.str_val.s,
+							q_vals[touri_col].val.str_val.len);
+						q_vals[touri_col].val.str_val.len = 0;
+					}
+
 					if(pua_dbf.insert(pua_db, q_cols, q_vals, n_query_cols)< 0)
 					{
 						LM_ERR("while inserting in db table pua\n");
