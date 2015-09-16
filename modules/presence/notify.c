@@ -2114,7 +2114,16 @@ void p_tm_callback( struct cell *t, int type, struct tmcb_params *ps)
 			ps->code, cb?cb->to_tag.len:0, cb?cb->to_tag.s:"", t->cseq_n.len, t->cseq_n.s);
 	}
 
-	if(ps->code == 481 || ps->code == 408)
+	/* XXX-WJD: 2013-04-22: removed the 408 check here because it kills
+	 * subscriptions that the subscriber doesn't know to be dead. The
+	 * drawback could be that we'll send out more NOTIFYs into thin air
+	 * (including 2 retransmits) until the NAT is punctured again.
+	 * Basically a revert of this:
+	 * ------------------------------------------------------------------------
+	 * r8687 | anca_vamanu | 2012-01-25 19:51:40 +0100 (Wed, 25 Jan 2012) | 2 lines
+	 * Fix: destroy the subscription dialog when Notify replied with 408 (reported by Saul Ibarra Corretge)
+	 * --------------------------------------------------------------------- */
+	if(ps->code == 481 /*|| ps->code == 408*/)
 	{
 		unsigned int hash_code;
 
