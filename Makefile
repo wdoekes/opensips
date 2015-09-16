@@ -51,11 +51,12 @@ skip_modules?=
 
 # if not set on the cmd. line or the env, exclude this modules:
 exclude_modules?= b2b_logic jabber cpl-c xmpp rls mi_xmlrpc xcap_client \
-	db_mysql db_postgres db_unixodbc db_oracle db_berkeley aaa_radius \
+	db_postgres db_unixodbc db_oracle db_berkeley aaa_radius \
 	osp perl snmpstats perlvdb carrierroute mmgeoip \
-	presence presence_xml presence_mwi presence_dialoginfo \
-	pua pua_bla pua_mi pua_usrloc pua_xmpp pua_dialoginfo \
 	ldap h350 identity regex memcached db_http json python dialplan
+	#db_mysql \
+	#presence presence_xml presence_mwi presence_dialoginfo \
+	#pua pua_bla pua_mi pua_usrloc pua_xmpp pua_dialoginfo
 ifeq ($(TLS),)
 	exclude_modules+= tlsops
 endif
@@ -477,7 +478,7 @@ install-cfg: $(cfg-prefix)/$(cfg-dir)
 			> $(cfg-prefix)/$(cfg-dir)$(NAME).cfg.sample
 		rm -fr $(cfg-prefix)/$(cfg-dir)$(NAME).cfg.sample0
 		chmod 600 $(cfg-prefix)/$(cfg-dir)$(NAME).cfg.sample
-		chmod 700 $(cfg-prefix)/$(cfg-dir)
+		chmod 701 $(cfg-prefix)/$(cfg-dir)
 		if [ -z "${skip_cfg_install}" -a \
 				! -f $(cfg-prefix)/$(cfg-dir)$(NAME).cfg ]; then \
 			mv -f $(cfg-prefix)/$(cfg-dir)$(NAME).cfg.sample \
