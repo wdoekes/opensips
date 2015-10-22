@@ -2142,12 +2142,15 @@ void p_tm_callback( struct cell *t, int type, struct tmcb_params *ps)
 	 * subscriptions that the subscriber doesn't know to be dead. The
 	 * drawback could be that we'll send out more NOTIFYs into thin air
 	 * (including 2 retransmits) until the NAT is punctured again.
-	 * Basically a revert of this:
-	 * ------------------------------------------------------------------------
-	 * r8687 | anca_vamanu | 2012-01-25 19:51:40 +0100 (Wed, 25 Jan 2012) | 2 lines
-	 * Fix: destroy the subscription dialog when Notify replied with 408 (reported by Saul Ibarra Corretge)
-	 * --------------------------------------------------------------------- */
-	if(ps->code == 481 /*|| ps->code == 408*/)
+	 * In the future, this patch can be dropped because the code now
+	 * looks like this:
+	 *   if(ps->code == 481 || (end_sub_on_timeout && (ps->code==408)) )
+	 *
+	 * XXX-WJD: 2015-10-22: added 477 to the checks. if a notify is
+	 * sent out to a tcp connection which is gone, we should
+	 * immediately stop retrying.
+	 */
+	if (ps->code == 481 /*|| ps->code == 408*/ || ps->code == 477)
 	{
 		unsigned int hash_code;
 
