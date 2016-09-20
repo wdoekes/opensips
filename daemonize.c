@@ -97,7 +97,7 @@ retry:
 	return rc;
 }
 
-inline void inc_init_timer(void)
+void inc_init_timer(void)
 {
 	LM_DBG("incrementing init timer no\n");
 	(*init_timer_no)++;

@@ -122,14 +122,14 @@ typedef union {
 		(s) = ntohl (*t_cp); \
 	} while (0)
 
-inline unsigned int dns_get16(const u_char *src) {
+static inline unsigned int dns_get16(const u_char *src) {
 	unsigned int dst;
 
 	DNS_GET16(dst, src);
 	return dst;
 }
 
-inline unsigned int dns_get32(const u_char *src) {
+static inline unsigned int dns_get32(const u_char *src) {
 	unsigned int dst;
 
 	DNS_GET32(dst, src);
@@ -444,7 +444,7 @@ query:
 	return &global_he;
 }
 
-inline struct hostent* resolvehost(char* name, int no_ip_test)
+struct hostent* resolvehost(char* name, int no_ip_test)
 {
 	static struct hostent* he=0;
 #ifdef HAVE_GETIPNODEBYNAME 
@@ -594,7 +594,7 @@ query:
 }
 
 
-inline struct hostent* rev_resolvehost(struct ip_addr *ip)
+struct hostent* rev_resolvehost(struct ip_addr *ip)
 {
 	if (dnscache_fetch_func != NULL) {
 		return own_gethostbyaddr((char*)(ip)->u.addr, (ip)->len, (ip)->af);

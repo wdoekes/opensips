@@ -58,7 +58,7 @@ struct p_modif
 #define MAX_NO_OF_EXTRA_HDRS 4
 
 
-void inline build_extra_hdrs(struct sip_msg* msg, const str* map, str* extra_hdrs)
+static inline void build_extra_hdrs(struct sip_msg* msg, const str* map, str* extra_hdrs)
 {
 	struct hdr_field *hf;
 	str xtra_hdr_list[MAX_NO_OF_EXTRA_HDRS];

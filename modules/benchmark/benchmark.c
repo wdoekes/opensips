@@ -49,6 +49,21 @@
 static int bm_start_timer(struct sip_msg* _msg, char* timer, char *foobar);
 static int bm_log_timer(struct sip_msg* _msg, char* timer, char* mystr);
 
+static inline int bm_get_time(bm_timeval_t *t)
+{
+#ifdef BM_CLOCK_REALTIME
+	if(clock_gettime(CLOCK_REALTIME, t)!=0)
+#else
+	if(gettimeofday(t, NULL))
+#endif
+	{
+		LM_ERR("error getting current time\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 /*
  * Module destroy function prototype
  */

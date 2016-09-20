@@ -67,7 +67,7 @@ enum {
 
 
 
-inline void free_to_params(struct to_body* tb)
+void free_to_params(struct to_body* tb)
 {
 	struct to_param *tp=tb->param_lst;
 	struct to_param *foo;

@@ -56,7 +56,7 @@
 	#warning ""
 #endif
 
-SSL_METHOD     *ssl_methods[TLS_USE_SSLv23 + 1];
+const SSL_METHOD *ssl_methods[TLS_USE_SSLv23 + 1];
 
 #define VERIFY_DEPTH_S 3
 

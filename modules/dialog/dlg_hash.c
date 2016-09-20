@@ -194,7 +194,7 @@ static inline void free_dlg_dlg(struct dlg_cell *dlg)
 }
 
 
-inline void destroy_dlg(struct dlg_cell *dlg)
+void destroy_dlg(struct dlg_cell *dlg)
 {
 	int ret = 0;
 
@@ -700,7 +700,7 @@ void link_dlg(struct dlg_cell *dlg, int n)
 
 
 
-inline void unlink_unsafe_dlg(struct dlg_entry *d_entry,
+void unlink_unsafe_dlg(struct dlg_entry *d_entry,
 													struct dlg_cell *dlg)
 {
 	if (dlg->next)

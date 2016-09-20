@@ -70,21 +70,21 @@ extern struct statstable *seas_stats_table;
  * Initialize and destroy statistics table
  */
 struct statstable* init_seas_stats_table();
-inline int stop_stats_server();
-inline void destroy_seas_stats_table();
+int stop_stats_server();
+void destroy_seas_stats_table();
 /** Statistics server process
  * functions
  */
 void serve_stats(int fd);
 int start_stats_server(char *socket);
-inline int print_stats_info(int f,int sock);
+int print_stats_info(int f,int sock);
 /**
  * Statistics functions
  */
-inline void as_relay_stat(struct cell *t);
-inline void event_stat(struct cell *t);
-inline void action_stat(struct cell *t);
-inline void stats_reply();
+void as_relay_stat(struct cell *t);
+void event_stat(struct cell *t);
+void action_stat(struct cell *t);
+void stats_reply();
 #define receivedplus() \
    do{ \
       lock_get(seas_stats_table->mutex); \

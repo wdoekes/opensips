@@ -62,21 +62,6 @@ typedef struct benchmark_timer
 	struct benchmark_timer *next;
 } benchmark_timer_t;
 
-inline int bm_get_time(bm_timeval_t *t)
-{
-#ifdef BM_CLOCK_REALTIME
-	if(clock_gettime(CLOCK_REALTIME, t)!=0)
-#else
-	if(gettimeofday(t, NULL))
-#endif
-	{
-		LM_ERR("error getting current time\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 inline unsigned long long bm_diff_time(bm_timeval_t *t1, bm_timeval_t *t2)
 {
 	unsigned long long tdiff;
