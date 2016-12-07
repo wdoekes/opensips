@@ -294,6 +294,12 @@ again:
 error_timeout:
 	/* timeout */
 	LM_ERR("timeout %d s elapsed from %d s\n", elapsed, tcp_connect_timeout);
+	{
+		struct ip_addr ip;
+		su2ip_addr(&ip, (union sockaddr_union*)servaddr);
+		LM_ERR("[connecting to IP %s:%hu]\n",
+			ip_addr2a(&ip), su_getport((union sockaddr_union*)servaddr));
+	}
 error:
 	return -1;
 end:
