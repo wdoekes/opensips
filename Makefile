@@ -32,7 +32,7 @@
 #  2007-09-28  added db_berkeley (wiquan)
 #
 
-#TLS=1
+TLS=1
 #SCTP=1
 #FREERADIUS=1
 NICER=1
