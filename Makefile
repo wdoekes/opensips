@@ -405,7 +405,7 @@ bin:
 deb:
 	rm -f debian
 	ln -sf packaging/debian
-	dpkg-buildpackage -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
+	dpkg-buildpackage -us -uc -sa -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
 	rm -f debian
 
 .PHONY: deb-lenny
