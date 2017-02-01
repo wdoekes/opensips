@@ -2147,7 +2147,19 @@ void p_tm_callback( struct cell *t, int type, struct tmcb_params *ps)
 			ps->code, cb?cb->to_tag.len:0, cb?cb->to_tag.s:"", t->cseq_n.len, t->cseq_n.s);
 	}
 
-	if(ps->code == 481 || ps->code==408)
+	/* XXX-WJD: 2013-04-22: removed the 408 check here because it kills
+	 * subscriptions that the subscriber doesn't know to be dead. The
+	 * drawback could be that we'll send out more NOTIFYs into thin air
+	 * (including 2 retransmits) until the NAT is punctured again.
+	 * In the future, this patch can be dropped because the code now
+	 * looks like this:
+	 *   if(ps->code == 481 || (end_sub_on_timeout && (ps->code==408)) )
+	 *
+	 * XXX-WJD: 2015-10-22: added 477 to the checks. if a notify is
+	 * sent out to a tcp connection which is gone, we should
+	 * immediately stop retrying.
+	 */
+	if (ps->code == 481 /*|| ps->code == 408*/ || ps->code == 477)
 	{
 		unsigned int hash_code;
 
