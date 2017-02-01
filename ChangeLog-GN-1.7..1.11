@@ -1,0 +1,291 @@
+Not done yet:
+-------------
+
+* timeout_avp ==> changes, how to fix?
+* pkmem 8M can now be configured in init-script/defaults file
+* fix/correct systemd file for opensips startup (for jessie)
+* tackle table-version differences between 1.7 and 1.11
+* tackle problem with PUBLISH that needs to be sent to both
+  old and new presence server
+  (possibly with modparam("pua_dialoginfo", "presence_server",
+   "sip:ps@localhost:5063") where that server parallel forks?)
+
+
+
+Old commits against OpenSIPS 1.7 and how/if they are resolved:
+--------------------------------------------------------------
+
+commit e51fa500999e2c68cdf74bc9dac95bffcfa3cc4e
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Wed Dec 7 14:48:42 2016 +0100
+
+    gn: Enable TLS.
+
+  ==> fixed in b7e6f4da848cce36c5a2ea1fe338ce89086c59f0
+
+commit ea64e8d3f6b99df0d6788493cbc858ed7f21294d
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Wed Dec 7 14:47:45 2016 +0100
+
+    gn: Complement tcp-outbound connect with more info.
+
+    After:
+
+        ERROR:core:tcp_blocking_connect: timeout 2 s elapsed from 2 s
+        ERROR:core:tcp_blocking_connect: [connecting to IP a.b.c.d:42318]
+        ERROR:core:tcpconn_connect: tcp_blocking_connect failed
+        ERROR:core:tcp_send: connect failed
+
+  ==> fixed in 3b4b5f7b3eb6f551d0b230fa882d93784cecc385
+
+commit 056419fd5c2dea213c0bb4236b99b3a0dfd38c3e
+Author: Razvan Crainea <razvan@opensips.org>
+Date:   Fri Nov 8 15:18:57 2013 +0100
+
+    gn: Backport: when joining two frags, only the used memory changes.
+
+    AST-85 #close "Opensips 1.7..1.10 have PKMEM statistics overflow bug"
+
+    (cherry-picked from 5852895cb4bdc9c53369ddc231546753de9e7d49)
+
+  ==> fixed upstream
+
+commit 55cd02e6460a0b3411a37161f4a9166af66bb8a5
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Thu Oct 22 13:49:20 2015 +0200
+
+    gn: Do stop sending NOTIFYs after receiving 477.
+
+    477 generally means that opensips (the core) has failed to send out the
+    packet over TCP. This will never auto-heal. A new TCP connection might
+    be set up, with a new subscription, but the odds of it being on the same
+    source port are next to none.
+
+    Instead, the 477s will cause lots of delays when the presence server
+    sends out NOTIFYs in batches, effectively blocking all opensips core
+    children while they're trying to connect to a closed/filtered tcp port.
+
+  ==> fixed in bf682a36260002f30583ebad87fc2919ff12a317 (see 408 too)
+
+commit 7f5d2d3c7ac6c4b6cfcaa25ad70e2f018f81900b
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Fri Oct 2 09:55:51 2015 +0200
+
+    gn: Cherry pick 7849b7f8d7cff88ae15ab25e2e7a4bb15bebd5b5.
+
+    (from branch master, complements b988d91c3b)
+
+    dialog: Document that unset_dlg_profile can be used from request_route.
+
+    This has been possible since 23f2322d in 1.8 and higher.
+
+  ==> fixed upstream
+
+commit daa8179e5239d172551ea13b01eacb1986e386d6
+Author: Bogdan-Andrei Iancu <bogdan@opensips.org>
+Date:   Tue Jun 30 16:06:02 2015 +0300
+
+    gn: Cherry pick 23f2322db56540be4d0b36a099a02e380aeafe19.
+
+    (from branch master, see also next commit that fixes docs)
+
+    Expose unset_dlg_profile() to Request Route.
+
+    Related to issue #554.
+
+  ==> fixed upstream
+
+commit 3998427ddfde569ef130087adb97628bf573d712
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Wed Mar 12 10:26:54 2014 +0100
+
+    gn: Cherry pick 6d058ec495c2faa015b24f412e2fe1b55526657e.
+
+    (from branch master)
+
+    presence_dialoginfo: Fix bounds checking by using a helper function.
+
+    Reported by: dsandras
+    > About the bound checking error, the code was cut&pasted from another
+    > place in the same file where the same error is still present:
+    > ...
+
+    Also I replaced a heap str with a stack one in build_dialoginfo. This
+    one wasn't freed either unless an error condition was hit.
+
+  ==> fixed upstream
+
+commit 92c06c61492ce95093d2e1096632edc184380136
+Author: Bogdan Andrei IANCU <bogdan@opensips.org>
+Date:   Sat Nov 23 02:56:12 2013 -0800
+
+    gn: Cherry pick 175f853ff91c7b19dd501ebec81ee44bcee48b74.
+
+    (from branch master)
+
+    Merge pull request #122 from dsandras/ds-fix-dialog-info-entity
+
+    This patch fixes the entity URI in XML documents to contain "sip:".
+    (cherry picked from commit 377e7574d411aa974cf469d6df18b6213b43a31f)
+
+  ==> fixed upstream
+
+commit bb0d732d31afe70be52e6ff39b35d27eca3b870b
+Author: Damien Sandras <dsandras@beip.be>
+Date:   Wed Jul 10 18:04:13 2013 +0200
+
+    gn: Cherry pick 8e95c58b816f6fcf1f91f39e0e6cf30bb293d936.
+
+    (from branch master)
+
+    Fixed presentity naming.
+
+    'Calling' is disturbing especially when the given peer is _receiving_ a
+    call.
+
+  ==> fixed upstream
+
+commit 49323c6b1bc4fef4c44d3e986f6911ceb5a4f00a
+Author: Bogdan-Andrei Iancu <bogdan@opensips.org>
+Date:   Mon Mar 10 23:17:20 2014 +0200
+
+    gn: Cherry pick 3c1164a012204e92150c5df5101aba709e4cb123.
+
+    (from branch master)
+
+    When updating the database records, first perform all update and inserts
+    and then check the timeout for expired records -> records to be deleted.
+    Doing first the delete may hide records "expired but to be updated".
+    Credits go to Nick Altmann Closes bug #112.
+
+  ==> fixed upstream
+
+commit d3afe2aa901151efaa774b0e646a836dbb1c3cab
+Author: Bogdan-Andrei Iancu <bogdan@opensips.org>
+Date:   Wed Nov 20 19:39:19 2013 +0200
+
+    gn: Cherry pick a0ba76e439835a4800d267dfd796f9dfb7c43a16.
+
+    (from branch master)
+
+    Fixed keeping turns on handling PUBLISHes for the same presentity - when
+    presentity is deleted (due a unPUBLISH) do not do any turn related ops
+    anymore Reported by Damien Sanders
+
+  ==> fixed upstream
+
+commit 997046d4dff165d4c70925c3e456668340fd2e5f
+Author: Bogdan Andrei IANCU <bogdan@opensips.org>
+Date:   Tue Sep 3 09:16:42 2013 -0700
+
+    gn: Cherry pick 31a7aa275b3615aa7aab5d37e22ecbb7eac9b58b.
+
+    (from branch master)
+
+    Merge pull request #62 from dsandras/ds-dialoginfo-notifications-fixes
+
+    Fixed RFC 4235 notifications compliance.
+
+  ==> fixed upstream
+
+commit 086659f160124d33ba9e20bad52168e8371d3f35
+Author: Bogdan-Andrei Iancu <bogdan@opensips.org>
+Date:   Wed Aug 28 17:47:36 2013 +0300
+
+    gn: Cherry pick 5fb6bb8c34ee23de5899193f74ca78164c36829f.
+
+    (from branch master)
+
+    - complete port of pull request #34
+
+  ==> fixed upstream
+
+commit 4cbd65711afa6db1aa5351dc69dacf7dc0cb1233
+Author: Damien Sandras <dsandras@beip.be>
+Date:   Mon Aug 5 15:56:41 2013 +0200
+
+    gn: Cherry pick b4d03684a420c25788d41a37ee2965c33b2a3b31.
+
+    (from branch master)
+
+    PUBLISH requests are now handled in the same order than received.
+
+    That is specifically useful for pua dialoginfo which was generating dialog
+    info notifications that were handled in the wrong order with that patch.
+    PUBLISH with older documents were sometimes treated after PUBLISH requests
+    with newer documents, leading to incoherent states.
+
+  ==> fixed upstream
+
+commit 2eb6a2f82cadeffac7bb03dd0fee55c11d9b83cb
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Tue Sep 10 11:41:41 2013 +0200
+
+    gn: Cherry pick fa0ff03b2e1f6c080119cb82303239336131e9ac.
+
+    (from branch wjd-timeout_avp_and_publish)
+
+    Set the dialog lifetime before running the callbacks.
+
+    When the timeout_avp is used to shorten the life of dialogs that never
+    receive an ACK, the timeout_avp is set to a low value at first and later
+    increased when the ACK is received.
+
+        modparam("dialog", "timeout_avp", "$avp(10)")
+        ...
+        # If this is an initial INVITE we want the timeout reduced
+        # drastically. The B2BUA's use the default timeout of about
+        # ~24 seconds. We need to use the same, or a failed call
+        # without an ACK may keep lingering for 7200 seconds here.
+        # And that, in turn, may trigger call limits, effectively
+        # denying the caller access.
+        # (The counter starts when the 200 is received.)
+        if (is_method("INVITE")) {
+            $avp(10) = 24;
+        }
+        ...
+        if (is_method("ACK")) {
+            $avp(10) = 7200;  # 2 hours should be enough for everyone :P
+        }
+
+    Before this change, the `pua_dialoginfo` callback would get the original
+    value of 24, which it would happily pass along to the presence server.
+
+    After this change, the updated value of 7200 is passed along as Expires
+    value and the presence server doesn't "forget" calls after a while
+    anymore.
+
+  ==> FIXME: timeout_avp has been removed, we now need sst-module
+
+commit 99ca0525e72643f06081e2ed04aef62b42a97ff9
+Author: Bogdan-Andrei Iancu <bogdan@opensips.org>
+Date:   Thu Feb 7 12:55:18 2013 +0000
+
+    gn: Cherry pick 062f9353f5302f478f30241ffd5261af6c7f695e.
+
+    (from branch master)
+
+    - subs_phtable_list MI command must flush as it may output a large
+      amount of data.  Credits go to Walter Doekes
+
+  ==> fixed upstream
+
+commit 3b6e6bdd8e13f4556dfd48df57288db6fcce63bd
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Wed Sep 16 14:52:36 2015 +0200
+
+    gn: Don't stop sending NOTIFYs after receiving 408.
+
+  ==> fixed in bf682a36260002f30583ebad87fc2919ff12a317 (see 477 too)
+
+commit 0818c8431e340a97187ccf26fe2b82f6ad6d8968
+Author: Walter Doekes <walter+github@wjd.nu>
+Date:   Wed Sep 16 14:59:03 2015 +0200
+
+    gn: Set build options.
+
+  ==> chmod fixed in 3d9441643a1bdfb6720372b8548bbdbe5b869154
+  ==> make deb fixes that all relevant items are built
+  ==> pkmem 8M should be set on command line (FIXME: init script!)
+
+.. vim: set syn=git:
