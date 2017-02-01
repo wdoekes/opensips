@@ -370,7 +370,13 @@ again:
 	}
 error_timeout:
 	/* timeout */
-	LM_ERR("timeout %d ms elapsed from %d ms\n", elapsed, tcp_connect_timeout);
+	{
+		struct ip_addr ip;
+		su2ip_addr(&ip, (union sockaddr_union*)servaddr);
+		LM_ERR("timeout %d ms elapsed from %d ms [connecting to IP %s:%hu]\n",
+			elapsed, tcp_connect_timeout,
+			ip_addr2a(&ip), su_getport((union sockaddr_union*)servaddr));
+	}
 error:
 	return -1;
 end:
