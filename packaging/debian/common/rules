@@ -28,7 +28,8 @@ URL := http://opensips.org/pub/opensips/$(UPVERSION)/src/opensips-$(UPVERSION)-t
 
 # Do we want the TLS version ?
 # Disabled by default due to license issues, set to non-void to enable
-TLS=
+# [gn-1.11]: Enabled
+TLS=1
 
 
 # List of all debian module packages we will build
