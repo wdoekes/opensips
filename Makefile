@@ -450,7 +450,7 @@ deb-%:
 	rm -rf debian
 	# dpkg-source cannot use links for debian source
 	cp -r packaging/debian/$(@:deb-%=%) debian
-	dpkg-buildpackage -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
+	dpkg-buildpackage -us -uc -sa -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
 	rm -rf debian
 
 .PHONY: deb
