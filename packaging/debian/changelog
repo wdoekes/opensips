@@ -1,3 +1,9 @@
+opensips (1.10.2-1vg-spiral0.ee2b014~deb8.7) jessie; urgency=low
+
+  * VoIPGRID build.
+
+ -- Walter Doekes <wjdoekes+voipgrid@osso.nl>  Tue, 09 May 2017 15:23:42 +0200
+
 opensips (1.10.2-1) stable; urgency=low
 
   * Major Public Release.
