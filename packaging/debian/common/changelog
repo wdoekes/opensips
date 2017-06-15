@@ -1,3 +1,9 @@
+opensips (1.11.9-2gn55.gaf96381~deb8) jessie; urgency=low
+
+  * GN build.
+
+ -- Walter Doekes <wjdoekes+opensips@osso.nl>  Thu, 15 Jun 2017 15:28:03 +0200
+
 opensips (1.11.9-1) stable; urgency=low
 
   * Minor Public Release.
