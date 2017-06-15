@@ -82,10 +82,19 @@ int exec_msg(struct sip_msg *msg, char *cmd )
 	}
 
 	schedule_to_kill(pid);
-	wait(&exit_status);
+
+	/* "pclose". Must close the pipe so the peer gets EOF. */
+	fflush(pipe);
+	fclose(pipe);
+	wait4(pid, &exit_status, 0, NULL);
+	if (exit_status == -1) {
+		LM_ERR("pclose: %s\n", strerror(errno));
+		goto closed;
+	}
 
 	/* success */
 	ret=1;
+	goto closed;
 
 error01:
 	if (ferror(pipe)) {
@@ -93,8 +102,9 @@ error01:
 		ser_error=E_EXEC;
 		ret=-1;
 	}
-
 	pclose(pipe);
+
+closed:
 	if (WIFEXITED(exit_status)) { /* exited properly .... */
 		/* return false if script exited with non-zero status */
 		if (WEXITSTATUS(exit_status)!=0) ret=-1;
