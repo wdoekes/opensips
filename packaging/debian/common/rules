@@ -66,9 +66,9 @@ JABBER_MOD_PATH=$(addprefix modules/, $(JABBER_MODULES))
 CPL_PKGNAME = opensips-cpl-module 
 CPL_MODULES = cpl-c
 CPL_MOD_PATH=$(addprefix modules/, $(CPL_MODULES))
-RADIUS_PKGNAME = opensips-radius-modules
-RADIUS_MODULES = aaa_radius peering
-RADIUS_MOD_PATH=$(addprefix modules/, $(RADIUS_MODULES))
+#RADIUS_PKGNAME = opensips-radius-modules
+#RADIUS_MODULES = aaa_radius peering
+#RADIUS_MOD_PATH=$(addprefix modules/, $(RADIUS_MODULES))
 PRESENCE_PKGNAME = opensips-presence-modules 
 PRESENCE_MODULES = presence presence_callinfo presence_dialoginfo presence_xml presence_mwi presence_xcapdiff pua pua_bla pua_dialoginfo pua_mi pua_usrloc pua_xmpp rls xcap xcap_client
 PRESENCE_MOD_PATH=$(addprefix modules/, $(PRESENCE_MODULES))
@@ -102,9 +102,9 @@ GEOIP_MOD_PATH=$(addprefix modules/, $(GEOIP_MODULES))
 REGEX_PKGNAME = opensips-regex-module
 REGEX_MODULES = regex
 REGEX_MOD_PATH=$(addprefix modules/, $(REGEX_MODULES))
-IDENTITY_PKGNAME = opensips-identity-module 
-IDENTITY_MODULES = identity
-IDENTITY_MOD_PATH=$(addprefix modules/, $(IDENTITY_MODULES))
+#IDENTITY_PKGNAME = opensips-identity-module
+#IDENTITY_MODULES = identity
+#IDENTITY_MOD_PATH=$(addprefix modules/, $(IDENTITY_MODULES)
 B2BUA_PKGNAME = opensips-b2bua-module 
 B2BUA_MODULES = b2b_entities b2b_logic
 B2BUA_MOD_PATH=$(addprefix modules/, $(B2BUA_MODULES))
@@ -170,6 +170,8 @@ else
 	CFLAGS += -O2
 endif
 endif
+
+CFLAGS += -fgnu89-inline
 
 # force lib (versus lib64) and SMP support all the time
 VARS = LIBDIR=lib ISSMP=yes TLS=$(TLS)

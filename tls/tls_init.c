@@ -93,11 +93,11 @@ int verify_callback(int pre_verify_ok, X509_STORE_CTX *ctx) {
 	LM_NOTICE("subject = %s\n", buf);
 	LM_NOTICE("verify error:num=%d:%s\n",
 		err, X509_verify_cert_error_string(err));
-	LM_NOTICE("error code is %d\n", ctx->error);
+	LM_NOTICE("error code is %d\n", err);
 
-	switch (ctx->error) {
+	switch (err) {
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-			X509_NAME_oneline(X509_get_issuer_name(ctx->current_cert),
+			X509_NAME_oneline(X509_get_issuer_name(err_cert),
 				buf,sizeof buf);
 			LM_NOTICE("issuer= %s\n",buf);
 			break;
@@ -147,7 +147,7 @@ int verify_callback(int pre_verify_ok, X509_STORE_CTX *ctx) {
 
 		default:
 			LM_NOTICE("something wrong with the cert"
-				" ... error code is %d (check x509_vfy.h)\n", ctx->error);
+				" ... error code is %d (check x509_vfy.h)\n", err);
 			break;
 	}
 
@@ -196,19 +196,31 @@ err:
  */
 
 static void    *
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_malloc(size_t size, const char *file, int line)
+#else
 ser_malloc(size_t size)
+#endif
 {
 	return shm_malloc(size);
 }
 
 static void    *
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_realloc(void *ptr, size_t size, const char *file, int line)
+#else
 ser_realloc(void *ptr, size_t size)
+#endif
 {
 	return shm_realloc(ptr, size);
 }
 
 static void
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_free(void *ptr, const char *file, int line)
+#else
 ser_free(void *ptr)
+#endif
 {
 	if (ptr)
 		shm_free(ptr);
@@ -408,6 +420,7 @@ init_ssl_methods(void)
 {
 	LM_DBG("entered\n");
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 #ifndef OPENSSL_NO_SSL2
 	ssl_methods[TLS_USE_SSLv2_cli - 1] = (SSL_METHOD*)SSLv2_client_method();
 	ssl_methods[TLS_USE_SSLv2_srv - 1] = (SSL_METHOD*)SSLv2_server_method();
@@ -417,6 +430,7 @@ init_ssl_methods(void)
 	ssl_methods[TLS_USE_SSLv3_cli - 1] = (SSL_METHOD*)SSLv3_client_method();
 	ssl_methods[TLS_USE_SSLv3_srv - 1] = (SSL_METHOD*)SSLv3_server_method();
 	ssl_methods[TLS_USE_SSLv3 - 1] = (SSL_METHOD*)SSLv3_method();
+#endif
 
 	ssl_methods[TLS_USE_TLSv1_cli - 1] = (SSL_METHOD*)TLSv1_client_method();
 	ssl_methods[TLS_USE_TLSv1_srv - 1] = (SSL_METHOD*)TLSv1_server_method();
@@ -584,6 +598,7 @@ init_ssl_ctx_behavior( struct tls_domain *d ) {
 }
 
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 static int check_for_krb(void)
 {
 	SSL_CTX *xx;
@@ -606,6 +621,7 @@ static int check_for_krb(void)
 	SSL_CTX_free(xx);
 	return 0;
 }
+#endif
 
 static void tls_static_locks_ops(int mode, int n, const char* file, int line)
 {
@@ -740,6 +756,7 @@ init_tls(void)
 	SSL_load_error_strings();
 	init_ssl_methods();
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 	i = check_for_krb();
 	if (i==-1) {
 		LM_ERR("kerberos check failed\n");
@@ -758,6 +775,7 @@ init_tls(void)
 			(i==1)?"":"no ",(i!=1)?"no ":"");
 		return -1;
 	}
+#endif
 
 	/*
 	 * now initialize tls default domains
