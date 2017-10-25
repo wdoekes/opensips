@@ -628,7 +628,7 @@ static void sig_usr(int signo)
 					LM_GEN1(memdump, "Memory status (pkg):\n");
 					pkg_status();
 					#endif
-					exit(0);
+					_exit(0);
 					break;
 			case SIGUSR1:
 					/* statistics -> show only pkg mem */
@@ -901,7 +901,7 @@ static int main_loop(void)
 							clean_write_pipeend();
 							if (chd_rank == 1 && startup_done)
 								*startup_done = -1;
-							exit(-1);
+							_exit(-1);
 						}
 
 						/* first UDP proc runs statup_route (if defined) */
@@ -913,7 +913,7 @@ static int main_loop(void)
 								clean_write_pipeend();
 								*startup_done = -1;
 								LM_ERR("Startup route processing failed\n");
-								exit(-1);
+								_exit(-1);
 							}
 							*startup_done = 1;
 						}
@@ -927,7 +927,7 @@ static int main_loop(void)
 						 * have same SHM load pointer */
 						pt[process_no].load = load_p;
 						udp_rcv_loop();
-						exit(-1);
+						_exit(-1);
 					}
 					else {
 						/* wait for first proc to finish the startup route */
@@ -962,7 +962,7 @@ static int main_loop(void)
 						clean_write_pipeend();
 						if( (si==sctp_listen && i==0) && startup_done)
 							*startup_done = -1;
-						exit(-1);
+						_exit(-1);
 					}
 
 					/* was startup route executed so far ? if not, run it only by the
@@ -975,7 +975,7 @@ static int main_loop(void)
 								LM_ERR("failed to send status code\n");
 							clean_write_pipeend();
 							*startup_done = -1;
-							exit(-1);
+							_exit(-1);
 						}
 						*startup_done = 1;
 					}
@@ -985,7 +985,7 @@ static int main_loop(void)
 					clean_write_pipeend();
 
 					sctp_server_rcv_loop();
-					exit(-1);
+					_exit(-1);
 				} else {
 					/* wait for first proc to finish the startup route */
 					if( (si==sctp_listen && i==0) && startup_done!=NULL)
@@ -1030,7 +1030,7 @@ static int main_loop(void)
 					LM_ERR("failed to send status code\n");
 				clean_write_pipeend();
 
-				exit(-1);
+				_exit(-1);
 			}
 
 			if (!no_daemon_mode && send_status_code(0) < 0)
@@ -1038,7 +1038,7 @@ static int main_loop(void)
 			clean_write_pipeend();
 
 			tcp_main_loop();
-			exit(-1);
+			_exit(-1);
 		}
 	}
 	#endif
