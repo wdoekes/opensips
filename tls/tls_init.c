@@ -623,6 +623,7 @@ static int check_for_krb(void)
 }
 #endif
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 static void tls_static_locks_ops(int mode, int n, const char* file, int line)
 {
 	if (n<0 || n>tls_static_locks_no) {
@@ -678,6 +679,7 @@ static void tls_dyn_lock_destroy(struct CRYPTO_dynlock_value *dyn_lock,
 	lock_destroy(&dyn_lock->lock);
 	shm_free(dyn_lock);
 }
+#endif
 
 
 int tls_init_multithread(void)

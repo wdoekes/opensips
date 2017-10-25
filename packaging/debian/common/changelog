@@ -1,3 +1,9 @@
+opensips (1.11.9-3gn55.gaf96381~deb9) stretch; urgency=low
+
+  * GN build.
+
+ -- Walter Doekes <wjdoekes+opensips@osso.nl>  Wed, 25 Oct 2017 13:20:23 +0200
+
 opensips (1.11.9-2gn55.gaf96381~deb9) stretch; urgency=low
 
   * GN build.
