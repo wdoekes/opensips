@@ -935,6 +935,9 @@ destroy_tls(void)
 	/*SSL_free_comp_methods(); - this function is not on std. openssl*/
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+	OPENSSL_cleanup();
+#endif
 }
 
 /*
