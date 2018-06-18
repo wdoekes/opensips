@@ -1,3 +1,12 @@
+Patched now:
+------------
+
+* updated from 1.11.9 to 1.11.11, interesting changes in:
+  - 4cef80fb411178c45d49c98bcf7f54299798a091 - sl_send_reply retval change
+  - f4576ba76e599f2ace2e3d5af3bcc0be1437bbdd - t_check_trans retval change
+  - 6843ee0993941a68baddd32a4ca935f93d12ff39 - update branch route only if specified
+  - 05ea491a39e6ef33bade1a906e9a4ab3464cf815 - transformations use pkgmem instead of staticbuf
+
 Not done yet:
 -------------
 
