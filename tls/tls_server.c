@@ -228,16 +228,20 @@ tls_accept(struct tcp_connection *c, short *poll_events)
 	}
 
 	ssl = (SSL *) c->extra_data;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #ifndef OPENSSL_NO_KRB5
 	if ( ssl->kssl_ctx==NULL )
 		ssl->kssl_ctx = kssl_ctx_new( );
 #endif
+#endif
 	ret = SSL_accept(ssl);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #ifndef OPENSSL_NO_KRB5
 	if ( ssl->kssl_ctx ) {
 		kssl_ctx_free( ssl->kssl_ctx );
 		ssl->kssl_ctx = 0;
 	}
+#endif
 #endif
 	if (ret > 0) {
 		LM_INFO("New TLS connection from %s:%d accepted\n", ip_addr2a(&c->rcv.src_ip), c->rcv.src_port);
@@ -635,11 +639,13 @@ tls_tcpconn_init(struct tcp_connection *c, int sock)
 		return -1;
 	}
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #ifndef OPENSSL_NO_KRB5
 	if ( ((SSL *)c->extra_data)->kssl_ctx ) {
 		kssl_ctx_free( ((SSL *)c->extra_data)->kssl_ctx );
 		((SSL *)c->extra_data)->kssl_ctx = 0;
 	}
+#endif
 #endif
 
 	if (c->state == S_CONN_ACCEPT) {

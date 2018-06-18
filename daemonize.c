@@ -252,7 +252,7 @@ int daemonize(char* name, int * own_pgid)
 			LM_DBG("waiting for status code from children\n");
 			rc = wait_for_all_children();
 			LM_INFO("pre-daemon process exiting with %d\n",rc);
-			exit(rc);
+			_exit(rc);
 		}
 
 		/* cleanup read end - nobody should
@@ -271,7 +271,7 @@ int daemonize(char* name, int * own_pgid)
 			goto error;
 		}else if (pid!=0){
 			/*parent process => exit */
-			exit(0);
+			_exit(0);
 		}
 	}
 

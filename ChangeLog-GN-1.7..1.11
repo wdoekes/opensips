@@ -3,6 +3,9 @@ Patched now:
 
 * additions/fixes so it compiles on debian/stretch:
   - debian dependencies
+  - openssl define fixes
+  - openssl call _exit() instead of exit() because of blocking shutdown;
+    similar to https://github.com/openssl/openssl/issues/6214
 * updated from 1.11.9 to 1.11.11, interesting changes in:
   - 4cef80fb411178c45d49c98bcf7f54299798a091 - sl_send_reply retval change
   - f4576ba76e599f2ace2e3d5af3bcc0be1437bbdd - t_check_trans retval change

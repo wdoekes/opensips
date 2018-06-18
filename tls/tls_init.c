@@ -93,11 +93,11 @@ int verify_callback(int pre_verify_ok, X509_STORE_CTX *ctx) {
 	LM_NOTICE("subject = %s\n", buf);
 	LM_NOTICE("verify error:num=%d:%s\n",
 		err, X509_verify_cert_error_string(err));
-	LM_NOTICE("error code is %d\n", ctx->error);
+	LM_NOTICE("error code is %d\n", err);
 
-	switch (ctx->error) {
+	switch (err) {
 		case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-			X509_NAME_oneline(X509_get_issuer_name(ctx->current_cert),
+			X509_NAME_oneline(X509_get_issuer_name(err_cert),
 				buf,sizeof buf);
 			LM_NOTICE("issuer= %s\n",buf);
 			break;
@@ -147,7 +147,7 @@ int verify_callback(int pre_verify_ok, X509_STORE_CTX *ctx) {
 
 		default:
 			LM_NOTICE("something wrong with the cert"
-				" ... error code is %d (check x509_vfy.h)\n", ctx->error);
+				" ... error code is %d (check x509_vfy.h)\n", err);
 			break;
 	}
 
@@ -196,19 +196,31 @@ err:
  */
 
 static void    *
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_malloc(size_t size, const char *file, int line)
+#else
 ser_malloc(size_t size)
+#endif
 {
 	return shm_malloc(size);
 }
 
 static void    *
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_realloc(void *ptr, size_t size, const char *file, int line)
+#else
 ser_realloc(void *ptr, size_t size)
+#endif
 {
 	return shm_realloc(ptr, size);
 }
 
 static void
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+ser_free(void *ptr, const char *file, int line)
+#else
 ser_free(void *ptr)
+#endif
 {
 	if (ptr)
 		shm_free(ptr);
@@ -586,6 +598,7 @@ init_ssl_ctx_behavior( struct tls_domain *d ) {
 }
 
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 static int check_for_krb(void)
 {
 	SSL_CTX *xx;
@@ -608,7 +621,9 @@ static int check_for_krb(void)
 	SSL_CTX_free(xx);
 	return 0;
 }
+#endif
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 static void tls_static_locks_ops(int mode, int n, const char* file, int line)
 {
 	if (n<0 || n>tls_static_locks_no) {
@@ -664,6 +679,7 @@ static void tls_dyn_lock_destroy(struct CRYPTO_dynlock_value *dyn_lock,
 	lock_destroy(&dyn_lock->lock);
 	shm_free(dyn_lock);
 }
+#endif
 
 
 int tls_init_multithread(void)
@@ -742,6 +758,7 @@ init_tls(void)
 	SSL_load_error_strings();
 	init_ssl_methods();
 
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 	i = check_for_krb();
 	if (i==-1) {
 		LM_ERR("kerberos check failed\n");
@@ -760,6 +777,7 @@ init_tls(void)
 			(i!=1)?"":"no ",(i!=1)?"no ":"");
 		return -1;
 	}
+#endif
 
 	/*
 	 * now initialize tls default domains
@@ -917,6 +935,9 @@ destroy_tls(void)
 	/*SSL_free_comp_methods(); - this function is not on std. openssl*/
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+	OPENSSL_cleanup();
+#endif
 }
 
 /*
