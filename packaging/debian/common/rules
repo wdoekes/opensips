@@ -31,6 +31,9 @@ URL := http://opensips.org/pub/opensips/$(UPVERSION)/src/opensips-$(UPVERSION)-t
 # [gn-1.11]: Enabled
 TLS=1
 
+# Parallel builds
+FASTER=1
+MAKE_FASTER=-j8
 
 # List of all debian module packages we will build
 # Used to index the make variable below, which has details about each package
@@ -174,7 +177,7 @@ endif
 CFLAGS += -fgnu89-inline
 
 # force lib (versus lib64) and SMP support all the time
-VARS = LIBDIR=lib ISSMP=yes TLS=$(TLS)
+VARS = LIBDIR=lib ISSMP=yes TLS=$(TLS) FASTER=$(FASTER)
 
 ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	INSTALL_PROGRAM += -s
@@ -193,12 +196,12 @@ build-stamp: configure-stamp
 	dh_testdir
 
 	# Add here commands to compile the package.
-	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) app \
+	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) $(MAKE_FASTER) app \
 	  modules skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/opensips/
-	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) \
-	  modules modules="$(BUILD_MODULE_PATHS)" cfg-target=/etc/opensips/
+	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) $(MAKE_FASTER) \
+	  modules modules="$(BUILD_MODULE_PATHS)" $(MAKE_FASTER) cfg-target=/etc/opensips/
 	# generate the utils db_berkeley
-	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) utils include_modules="db_berkeley"
+	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) $(MAKE_FASTER) utils include_modules="db_berkeley"
 
 	touch build-stamp
 
