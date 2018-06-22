@@ -822,6 +822,7 @@ int Sipreply2Xmpp(ua_pres_t* hentity, struct sip_msg * msg)
 		}
 	}
 	else
+	{
 		if(code>=200 )
 		{
 			attr= xmlNewProp(root_node, BAD_CAST "type", BAD_CAST "subscribed");
@@ -851,7 +852,7 @@ int Sipreply2Xmpp(ua_pres_t* hentity, struct sip_msg * msg)
 			LM_ERR("while extracting buffer content\n");
 			goto error;
 		}
-
+	}
 
 	LM_DBG("xmpp_msg: %.*s\n",xmpp_msg.len, xmpp_msg.s);
 

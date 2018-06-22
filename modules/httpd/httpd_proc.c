@@ -61,8 +61,6 @@ static const str MI_HTTP_U_URL = str_init("<html><body>"
 "Unable to parse URL!</body></html>");
 static const str MI_HTTP_U_METHOD = str_init("<html><body>"
 "Unsupported HTTP request!</body></html>");
-static const str MI_HTTP_U_CNT_TYPE = str_init("<html><body>"
-"Unsupported Content-Type!</body></html>");
 
 /**
  * Data structure to store inside elents of slinkedl_list list.

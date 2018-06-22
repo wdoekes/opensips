@@ -193,36 +193,35 @@ int find_credentials(struct sip_msg* _m, str* _realm, int _hftype,
 			LM_ERR("failed to parse credentials\n");
 			return (res == -1) ? -2 : -3;
 		}
+		if (res == 0)
+		{
+			r = &(((auth_body_t*)(ptr->parsed))->digest.realm);
+
+			if (r->len == _realm->len)
+			{
+				if (!strncasecmp(_realm->s, r->s, r->len))
+				{
+					*_h = ptr;
+					return 0;
+				}
+			}
+		}
+
+		prev = ptr;
+		if (parse_headers(_m, hdr_flags, 1) == -1)
+		{
+			LM_ERR("failed to parse headers\n");
+			return -4;
+		}
 		else
-			if (res == 0)
+		{
+			if (prev != _m->last_header)
 			{
-				r = &(((auth_body_t*)(ptr->parsed))->digest.realm);
-
-				if (r->len == _realm->len)
-				{
-					if (!strncasecmp(_realm->s, r->s, r->len))
-					{
-						*_h = ptr;
-						return 0;
-					}
-				}
-			}
-
-			prev = ptr;
-			if (parse_headers(_m, hdr_flags, 1) == -1)
-			{
-				LM_ERR("failed to parse headers\n");
-				return -4;
-			}
-			else
-			{
-				if (prev != _m->last_header)
-				{
-					if (_m->last_header->type == _hftype) ptr = _m->last_header;
-					else break;
-				}
+				if (_m->last_header->type == _hftype) ptr = _m->last_header;
 				else break;
 			}
+			else break;
+		}
 	}
 
      /* Credentials with given realm not found */

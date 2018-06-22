@@ -244,7 +244,7 @@ void timeout_listener_process(int rank)
 				if (rtpp_info.sa_family == AF_UNIX)
 					p = ((struct sockaddr_un*)&rtpp_info)->sun_path;
 				else {
-					struct ip_addr ip;
+					struct ip_addr ip = {0,};
 					sockaddr2ip_addr(&ip, &rtpp_info);
 					p = ip_addr2a(&ip); \
 				}

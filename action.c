@@ -1569,7 +1569,7 @@ int do_action(struct action* a, struct sip_msg* msg)
 next_avp:
 							if (it) {
 								it = it->next;
-								if (it==NULL);
+								if (it==NULL)
 									break;
 							}
 						}

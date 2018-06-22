@@ -407,7 +407,7 @@ int add_interfaces(char* if_name, int family, unsigned short port,
 	int lastlen;
 	int s;
 	char* tmp;
-	struct ip_addr addr;
+	struct ip_addr addr = {0,};
 	int ret;
 	enum si_flags flags;
 

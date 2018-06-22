@@ -1722,6 +1722,7 @@ static int sync_dlg_db_mem(void)
 						cseq1.s = VAL_STR(values+9).s;
 						cseq1.len = strlen(cseq1.s);
 
+						db_caller_cseq = dlg_caller_cseq = 0;
 						str2int(&cseq1,&db_caller_cseq);
 						str2int(&known_dlg->legs[DLG_CALLER_LEG].r_cseq,&dlg_caller_cseq);
 
@@ -1751,6 +1752,7 @@ static int sync_dlg_db_mem(void)
 						cseq2.len = strlen(cseq2.s);
 
 						callee_leg_idx = callee_idx(known_dlg);
+						db_callee_cseq = dlg_callee_cseq = 0;
 						str2int(&cseq2,&db_callee_cseq);
 						str2int(&known_dlg->legs[callee_leg_idx].r_cseq,&dlg_callee_cseq);
 

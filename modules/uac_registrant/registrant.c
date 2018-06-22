@@ -714,7 +714,7 @@ int run_mi_reg_list(void *e_data, void *data, void *r_data)
 	reg_record_t *rec = (reg_record_t*)e_data;
 	int len;
 	char* p;
-	struct ip_addr addr;
+	struct ip_addr addr = {0,};
 
 	node = add_mi_node_child(&rpl_tree->node, MI_DUP_VALUE, "AOR", 3,
 							rec->td.rem_uri.s, rec->td.rem_uri.len);
