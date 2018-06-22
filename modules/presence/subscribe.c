@@ -40,6 +40,9 @@
 #include "../pua/hash.h"
 
 
+static void update_db_subs_clean_only(db_con_t *db,db_func_t dbf, shtable_t hash_table,
+	int htable_size, int no_lock, handle_expired_func_t handle_expired_func);
+
 int get_stored_info(struct sip_msg* msg, subs_t* subs, int* error_ret,
 		str* reply_str);
 int get_database_info(struct sip_msg* msg, subs_t* subs, int* error_ret,
@@ -1313,6 +1316,19 @@ void timer_db_update(unsigned int ticks,void *param)
 
 }
 
+/* same as timer_db_update, but we don't run the db code, only the
+ * expired clean code */
+void timer_db_clean(unsigned int ticks,void *param)
+{
+	int no_lock = 0;
+
+	if (ticks == 0 && param == NULL)
+		no_lock = 1;
+
+	update_db_subs_clean_only(pa_db, pa_dbf, subs_htable,
+			shtable_size, no_lock, handle_expired_subs);
+}
+
 void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 	int htable_size, int no_lock, handle_expired_func_t handle_expired_func)
 {
@@ -1610,6 +1626,57 @@ void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 	}
 
 	return;
+}
+
+static void update_db_subs_clean_only(db_con_t *db,db_func_t dbf, shtable_t hash_table,
+	int htable_size, int no_lock, handle_expired_func_t handle_expired_func)
+{
+	/* this code is a subset of update_db_subs */
+	subs_t* del_s;
+	subs_t* s= NULL, *prev_s= NULL;
+	int i;
+
+        for(i=0; i<htable_size; i++)
+        {
+                if(!no_lock)
+                        lock_get(&hash_table[i].lock);
+
+                prev_s= hash_table[i].entries;
+                s= prev_s->next;
+
+                while(s)
+                {
+                        printf_subs(s);
+                        if(s->expires < (int)time(NULL))
+                        {
+                                LM_DBG("Found expired record\n");
+                                del_s= s;
+                                s= s->next;
+                                prev_s->next= s;
+
+                                if(!no_lock)
+                                {
+                                        lock_release(&hash_table[i].lock);
+                                        if(handle_expired_func(del_s)< 0)
+                                        {
+                                                LM_ERR("in function handle_expired_record\n");
+                                                return;
+                                        }
+                                }
+                                free_subs(del_s);
+
+                                if(!no_lock)
+                                        lock_get(&hash_table[i].lock);
+
+                                continue;
+                        }
+			s->db_flag= NO_UPDATEDB_FLAG;
+			prev_s= s;
+			s= s->next;
+		}
+		if(!no_lock)
+			lock_release(&hash_table[i].lock);
+	}
 }
 
 

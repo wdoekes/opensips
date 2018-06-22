@@ -336,6 +336,9 @@ static int mod_init(void)
 	if(db_update_period>0)
 		register_timer("presence-dbupdate", timer_db_update, 0,
 			db_update_period);
+	else
+		register_timer("presence-dbupdate", timer_db_clean, 0,
+			100);
 
 	if (pa_dbf.use_table(pa_db, &watchers_table) < 0)
 	{

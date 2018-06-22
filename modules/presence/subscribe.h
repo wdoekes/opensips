@@ -82,6 +82,7 @@ int handle_subscribe(struct sip_msg*, char*, char*);
 int delete_db_subs(str pres_uri, str ev_stored_name, str to_tag);
 
 void timer_db_update(unsigned int ticks,void *param);
+void timer_db_clean(unsigned int ticks,void *param);
 
 int update_subs_db(subs_t* subs, int type);
 
