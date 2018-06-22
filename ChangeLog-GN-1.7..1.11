@@ -15,6 +15,13 @@ Patched now:
 * backports from 2.4.x:
   - ed65c11864cc4322568a9a9648d2351f033474b3 - cope with high branch_ids
 * added fix against presence server memory leak when db_update_period is 0
+* openssl fixes on stretch include _exit() changes:
+    The _exit()s make sure that the openssl atexit() is not called. At
+    startup daemonization, we'd need a call to OPENSSL_cleanup() if we
+    didn't _exit(). At shutdown I have no idea. All children would wait
+    during/after the exit(). No idea why. Attaching an strace to them would
+    unfreeze them and finish the shutdown.
+  See also: https://github.com/openssl/openssl/issues/6214
 
 Not done yet:
 -------------
