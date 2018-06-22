@@ -1,3 +1,12 @@
+opensips (1.11.11+1gn<VERSION>-1+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Should fix presence server memory leak.
+  * Should fix incidental Via branch problems with ignored responses.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Fri, 22 Jun 2018 15:58:29 +0200
+
+
 opensips (1.11.11-1) stable; urgency=low
 
   * Minor Public Release.

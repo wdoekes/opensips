@@ -6,11 +6,15 @@ Patched now:
   - openssl define fixes
   - openssl call _exit() instead of exit() because of blocking shutdown;
     similar to https://github.com/openssl/openssl/issues/6214
+  - a bunch of compile warning fixes
 * updated from 1.11.9 to 1.11.11, interesting changes in:
   - 4cef80fb411178c45d49c98bcf7f54299798a091 - sl_send_reply retval change
   - f4576ba76e599f2ace2e3d5af3bcc0be1437bbdd - t_check_trans retval change
   - 6843ee0993941a68baddd32a4ca935f93d12ff39 - update branch route only if specified
   - 05ea491a39e6ef33bade1a906e9a4ab3464cf815 - transformations use pkgmem instead of staticbuf
+* backports from 2.4.x:
+  - ed65c11864cc4322568a9a9648d2351f033474b3 - cope with high branch_ids
+* added fix against presence server memory leak when db_update_period is 0
 
 Not done yet:
 -------------
