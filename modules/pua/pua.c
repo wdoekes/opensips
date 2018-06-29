@@ -574,7 +574,9 @@ static int db_restore(void)
 	pua_dbf.free_result(pua_db, res);
 	res = NULL;
 
-	if(pua_dbf.delete(pua_db, 0, 0 , 0, 0) < 0)
+	/* DISABLED: we don't want to delete anything here if we're
+	 * using a replicating DB */
+	if(0 && pua_dbf.delete(pua_db, 0, 0 , 0, 0) < 0)
 	{
 		LM_ERR("while deleting information from db\n");
 		goto error;
