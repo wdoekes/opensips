@@ -1348,6 +1348,7 @@ void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 	subs_t* s= NULL, *prev_s= NULL;
 	int n_query_cols= 0, n_update_cols= 0;
 	int n_query_update;
+	int now;
 
 	query_cols[pres_uri_col= n_query_cols] =&str_presentity_uri_col;
 	query_vals[pres_uri_col].type = DB_STR;
@@ -1492,6 +1493,7 @@ void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 		return;
 	}
 
+	now = (int)time(NULL);
 	for(i=0; i<htable_size; i++)
 	{
 		if(!no_lock)
@@ -1503,7 +1505,7 @@ void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 		while(s)
 		{
 			printf_subs(s);
-			if(s->expires < (int)time(NULL))
+			if(s->expires < now)
 			{
 				LM_DBG("Found expired record\n");
 				del_s= s;
@@ -1635,46 +1637,48 @@ static void update_db_subs_clean_only(db_con_t *db,db_func_t dbf, shtable_t hash
 	subs_t* del_s;
 	subs_t* s= NULL, *prev_s= NULL;
 	int i;
+	int now;
 
-        for(i=0; i<htable_size; i++)
-        {
-                if(!no_lock)
-                        lock_get(&hash_table[i].lock);
+	now = (int)time(NULL);
+	for (i = 0; i < htable_size; i++)
+	{
+		if (!no_lock)
+			lock_get(&hash_table[i].lock);
 
-                prev_s= hash_table[i].entries;
-                s= prev_s->next;
+		prev_s = hash_table[i].entries;
+		s = prev_s->next;
 
-                while(s)
-                {
-                        printf_subs(s);
-                        if(s->expires < (int)time(NULL))
-                        {
-                                LM_DBG("Found expired record\n");
-                                del_s= s;
-                                s= s->next;
-                                prev_s->next= s;
+		while(s)
+		{
+			printf_subs(s);
+			if (s->expires < now)
+			{
+				LM_DBG("Found expired record\n");
+				del_s = s;
+				s = s->next;
+				prev_s->next = s;
 
-                                if(!no_lock)
-                                {
-                                        lock_release(&hash_table[i].lock);
-                                        if(handle_expired_func(del_s)< 0)
-                                        {
-                                                LM_ERR("in function handle_expired_record\n");
-                                                return;
-                                        }
-                                }
-                                free_subs(del_s);
+				if (!no_lock)
+				{
+					lock_release(&hash_table[i].lock);
+					if (handle_expired_func(del_s)< 0)
+					{
+						LM_ERR("in function handle_expired_record\n");
+						return;
+					}
+				}
+				free_subs(del_s);
 
-                                if(!no_lock)
-                                        lock_get(&hash_table[i].lock);
+				if (!no_lock)
+					lock_get(&hash_table[i].lock);
 
-                                continue;
-                        }
-			s->db_flag= NO_UPDATEDB_FLAG;
-			prev_s= s;
-			s= s->next;
+				continue;
+			}
+			s->db_flag = NO_UPDATEDB_FLAG;
+			prev_s = s;
+			s = s->next;
 		}
-		if(!no_lock)
+		if (!no_lock)
 			lock_release(&hash_table[i].lock);
 	}
 }
