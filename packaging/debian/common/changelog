@@ -1,4 +1,13 @@
-opensips (1.11.11+1gn<VERSION>-1+deb9) stretch; urgency=low
+opensips (1.11.11+2gn<VERSION>-1+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Don't delete opensips_pua table on startup (against replication issues).
+  * Slight performance improvement by not calling time() in a tight loop.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Fri, 29 Jun 2018 17:37:47 +0200
+
+
+opensips (1.11.11+1gn5676e88d-1+deb9) stretch; urgency=low
 
   * New GN build.
   * Should fix presence server memory leak.
