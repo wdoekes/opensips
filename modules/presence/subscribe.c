@@ -1517,6 +1517,7 @@ void update_db_subs(db_con_t *db,db_func_t dbf, shtable_t hash_table,
 					lock_release(&hash_table[i].lock);
 					if(handle_expired_func(del_s)< 0)
 					{
+						free_subs(del_s);
 						LM_ERR("in function handle_expired_record\n");
 						return;
 					}
@@ -1663,6 +1664,7 @@ static void update_db_subs_clean_only(db_con_t *db,db_func_t dbf, shtable_t hash
 					lock_release(&hash_table[i].lock);
 					if (handle_expired_func(del_s)< 0)
 					{
+						free_subs(del_s);
 						LM_ERR("in function handle_expired_record\n");
 						return;
 					}
