@@ -175,6 +175,7 @@ endif
 endif
 
 CFLAGS += -fgnu89-inline
+CFLAGS += -DOPENSSL_NO_SSL2=1  # openssl1.1 doesn't have this anymore
 
 # force lib (versus lib64) and SMP support all the time
 VARS = LIBDIR=lib ISSMP=yes TLS=$(TLS) FASTER=$(FASTER)
