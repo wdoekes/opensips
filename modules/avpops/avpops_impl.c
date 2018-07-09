@@ -980,6 +980,252 @@ error:
 	return -1;
 }
 
+/*
+ *    UTF-8 Encoding Form
+ *
+ *    U+0000..U+007F       0xxxxxxx
+ *    U+0080..U+07FF       110xxxxx 10xxxxxx
+ *    U+0800..U+FFFF       1110xxxx 10xxxxxx 10xxxxxx
+ *   U+10000..U+10FFFF     11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+ *
+ *
+ *    U+0000..U+007F       00..7F
+ *                      N  C0..C1  80..BF                   1100000x 10xxxxxx
+ *    U+0080..U+07FF       C2..DF  80..BF
+ *                      N  E0      80..9F  80..BF           11100000 100xxxxx
+ *    U+0800..U+0FFF       E0      A0..BF  80..BF
+ *    U+1000..U+CFFF       E1..EC  80..BF  80..BF
+ *    U+D000..U+D7FF       ED      80..9F  80..BF
+ *                      S  ED      A0..BF  80..BF           11101101 101xxxxx
+ *    U+E000..U+FFFF       EE..EF  80..BF  80..BF
+ *                      N  F0      80..8F  80..BF  80..BF   11110000 1000xxxx
+ *   U+10000..U+3FFFF      F0      90..BF  80..BF  80..BF
+ *   U+40000..U+FFFFF      F1..F3  80..BF  80..BF  80..BF
+ *  U+100000..U+10FFFF     F4      80..8F  80..BF  80..BF   11110100 1000xxxx
+ *
+ *  Legend:
+ *    N = Non-shortest form
+ *    S = Surrogates
+ *
+ *
+ * Source taken from Christian Hansen's https://github.com/chansen/c-utf8-valid
+ * and adapted to copy all into dst.
+ */
+size_t utf8_copy_replace(char *dst, const char *src, size_t len) {
+        unsigned char *dstp = (unsigned char*)dst;
+        const unsigned char *cur = (const unsigned char *)src;
+        const unsigned char *end = cur + len;
+        const unsigned char *p = cur;
+        unsigned char buf[4];
+        uint32_t v;
+
+        while (1) {
+                /* Cheat, so we can always access p[0]..p[3] */
+                if (cur >= end - 3) {
+                        if (cur == end)
+                                break;
+                        memset(buf, 0, 4);
+                        memcpy(buf, cur, end - cur);
+                        p = (const unsigned char *)buf;
+                } else {
+                        p = cur;
+                }
+
+                v = p[0];
+                /* 0xxxxxxx */
+                if ((v & 0x80) == 0) {
+                        cur += 1;
+                        *dstp++ = p[0];
+                        continue;
+                }
+
+                v = (v << 8) | p[1];
+                /* 110xxxxx 10xxxxxx */
+                if ((v & 0xE0C0) == 0xC080) {
+                        /* Ensure that the top 4 bits is not zero */
+                        v = v & 0x1E00;
+                        if (v == 0) {
+                                goto invalid;
+                        }
+                        cur += 2;
+                        memcpy(dstp, p, 2);
+                        dstp += 2;
+                        continue;
+                }
+
+                v = (v << 8) | p[2];
+                /* 1110xxxx 10xxxxxx 10xxxxxx */
+                if ((v & 0xF0C0C0) == 0xE08080) {
+                        /* Ensure that the top 5 bits is not zero and not a surrogate */
+                        v = v & 0x0F2000;
+                        if (v == 0 || v == 0x0D2000) {
+                                goto invalid;
+                        }
+                        cur += 3;
+                        memcpy(dstp, p, 3);
+                        dstp += 3;
+                        continue;
+                }
+
+                v = (v << 8) | p[3];
+                /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
+                if ((v & 0xF8C0C0C0) == 0xF0808080) {
+                        /* Ensure that the top 5 bits is not zero and not out of range */
+                        v = v & 0x07300000;
+                        if (v == 0 || v > 0x04000000) {
+                                goto invalid;
+                        }
+                        cur += 4;
+                        memcpy(dstp, p, 4);
+                        dstp += 4;
+                        continue;
+                }
+
+invalid:
+                *dstp++ = '?'; /* mark invalid */
+                while (++cur != end) {
+                        if ((*cur & 0x80) == 0) {
+                                /* Resume at first !0x80 byte */
+                                break;
+                        }
+                }
+        }
+
+        *dstp = '\0';
+        return dstp - (unsigned char*)dst;
+}
+
+#if 0
+int utf8_copy_replace(char *dst, char *src, int len)
+{
+	char *dstp = dst;
+	int utf8_type = 1;
+	int utf8_1 = 0;
+	int utf8_2 = 0;
+	int utf8_3 = 0;
+	int utf8_4 = 0;
+	int byte_count = 0;
+	int expected_byte_count = 0;
+
+
+	while (len--) {
+		register char cin = *src++;
+		switch (utf8_type) {
+		case 1:
+			if ((cin & 0x80)) {
+				if ((cin & 0xe0) == 0xc0 ) {
+					utf8_1 = cin;
+					utf8_type = 2;
+					byte_count = 1;
+					expected_byte_count = 2;
+					break;
+				}
+				if ((cin & 0xf0) == 0xe0 ) {
+					utf8_1 = cin;
+					utf8_type = 2;
+					byte_count = 1;
+					expected_byte_count = 3;
+					break;
+				}
+				if ((cin & 0xf8) == 0xf0) {
+					utf8_1 = cin;
+					utf8_type = 2;
+					byte_count = 1;
+					expected_byte_count = 4;
+					break;
+				}
+				*dstp++ = '?'; /* invalid */
+				utf8_type = 1;
+				break;
+			} else {
+				*dstp++ = cin;
+			}
+			break;
+		case 2:
+		case 3:
+		case 4:
+			if ((cin & 0xc0) == 0x80) {
+				if (utf8_type == expected_byte_count) {
+					utf8_type = 1;
+					break;
+				}
+				byte_count = utf8_type;
+				utf8_type++;
+				if (utf8_type == 5) {
+					utf8_type = 1;
+				}
+				break;
+			}
+			*dstp++ = '?'; /* invalid */
+			utf8_type = 1;
+			break;
+		default:
+			*dstp++ = '?'; /* invalid */
+			utf8_type = 1;
+			break;
+		}
+	}
+	*dstp = '\0';
+	return dstp - dst;
+}
+#endif
+
+int ops_copy_utf8_avp(struct sip_msg* msg, struct fis_param* src,
+		      struct fis_param* dst)
+{
+	struct usr_avp *avp = NULL;
+	char *tmpdst = NULL;
+	int tmpdstlen = 0;
+	int_str avp_val;
+	unsigned short name_type1;
+	unsigned short name_type2;
+	int avp_name1;
+	int avp_name2;
+	int n = 0;
+
+	/* get avp src name */
+	if (avpops_get_aname(msg, src, &avp_name1, &name_type1) != 0) {
+		LM_ERR("failed to get src AVP name\n");
+		goto done;
+	}
+	/* get avp dst name */
+	if (avpops_get_aname(msg, dst, &avp_name2, &name_type2) != 0) {
+		LM_ERR("failed to get dst AVP name\n");
+		goto done;
+	}
+
+	while ((avp = search_first_avp(name_type1, avp_name1, &avp_val, avp))) {
+		if (avp->flags & AVP_VAL_STR && avp_val.s.len) {
+			if (avp_val.s.len >= tmpdstlen) {
+				if (tmpdst) {
+					pkg_free(tmpdst);
+				}
+				tmpdstlen = avp_val.s.len + 1;
+				if (!(tmpdst = pkg_malloc(tmpdstlen))) {
+					LM_ERR("failed to alloc mem for utf8 safe string\n");
+					n = 0;
+					goto done;
+				}
+			}
+			avp_val.s.len = utf8_copy_replace(tmpdst, avp_val.s.s, avp_val.s.len);
+			avp_val.s.s = tmpdst;
+		}
+		if (add_avp(name_type2 | (avp->flags&AVP_VAL_STR), avp_name2,
+				avp_val) == -1) {
+			LM_ERR("failed to create new avp\n");
+			n = 0;
+			goto done;
+		}
+		n++;
+	}
+
+done:
+	if (tmpdst) {
+		pkg_free(tmpdst);
+	}
+	return n ? 1 : -1;
+}
+
 
 #define STR_BUF_SIZE  1024
 static char str_buf[STR_BUF_SIZE];

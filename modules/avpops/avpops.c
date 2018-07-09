@@ -92,6 +92,7 @@ static int w_dbquery_avps(struct sip_msg* msg, char* query,
 		char* dest, char* url);
 static int w_delete_avps(struct sip_msg* msg, char* param, char *foo);
 static int w_copy_avps(struct sip_msg* msg, char* param, char *check);
+static int w_copy_utf8_avps(struct sip_msg* msg, char* param, char *check);
 static int w_pushto_avps(struct sip_msg* msg, char* destination, char *param);
 static int w_check_avps(struct sip_msg* msg, char* param, char *check);
 static int w_op_avps(struct sip_msg* msg, char* param, char *op);
@@ -139,6 +140,9 @@ static cmd_export_t cmds[] = {
 		REQUEST_ROUTE|FAILURE_ROUTE|BRANCH_ROUTE|ONREPLY_ROUTE|LOCAL_ROUTE|
 		STARTUP_ROUTE|TIMER_ROUTE|EVENT_ROUTE},
 	{"avp_copy",   (cmd_function)w_copy_avps,  2,  fixup_copy_avp, 0,
+		REQUEST_ROUTE|FAILURE_ROUTE|BRANCH_ROUTE|ONREPLY_ROUTE|LOCAL_ROUTE|
+		STARTUP_ROUTE|TIMER_ROUTE|EVENT_ROUTE},
+	{"avp_copy_utf8", (cmd_function)w_copy_utf8_avps, 2, fixup_copy_avp, 0,
 		REQUEST_ROUTE|FAILURE_ROUTE|BRANCH_ROUTE|ONREPLY_ROUTE|LOCAL_ROUTE|
 		STARTUP_ROUTE|TIMER_ROUTE|EVENT_ROUTE},
 	{"avp_pushto", (cmd_function)w_pushto_avps, 2, fixup_pushto_avp, 0,
@@ -1229,6 +1233,12 @@ static int w_copy_avps(struct sip_msg* msg, char* name1, char *name2)
 {
 	return ops_copy_avp ( msg, (struct fis_param*)name1,
 								(struct fis_param*)name2);
+}
+
+static int w_copy_utf8_avps(struct sip_msg* msg, char* name1, char *name2)
+{
+	return ops_copy_utf8_avp(msg, (struct fis_param*)name1,
+				 (struct fis_param*)name2);
 }
 
 static int w_pushto_avps(struct sip_msg* msg, char* destination, char *param)

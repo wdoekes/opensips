@@ -50,11 +50,12 @@ Ramona-Elena Modroiu
               1.5.6. avp_pushto(destination,name)
               1.5.7. avp_check(name,op_value)
               1.5.8. avp_copy(old_name,new_name)
-              1.5.9. avp_subst(avps, subst)
-              1.5.10. avp_op(name,op_value)
-              1.5.11. is_avp_set(name)
-              1.5.12. avp_print()
-              1.5.13. avp_insert(avp_name, value, index)
+              1.5.9. avp_copy_utf8(old_name,new_name)
+              1.5.10. avp_subst(avps, subst)
+              1.5.11. avp_op(name,op_value)
+              1.5.12. is_avp_set(name)
+              1.5.13. avp_print()
+              1.5.14. avp_insert(avp_name, value, index)
 
    List of Examples
 
@@ -78,11 +79,12 @@ Ramona-Elena Modroiu
    1.18. avp_pushto usage
    1.19. avp_check usage
    1.20. avp_copy usage
-   1.21. avp_subst usage
-   1.22. avp_op usage
-   1.23. is_avp_set usage
-   1.24. avp_print usage
+   1.21. avp_copy_utf8 usage
+   1.22. avp_subst usage
+   1.23. avp_op usage
+   1.24. is_avp_set usage
    1.25. avp_print usage
+   1.26. avp_insert usage
 
 Chapter 1. Admin Guide
 
@@ -526,7 +528,27 @@ avp_copy("$avp(678)", "$avp(345)/g");
 avp_copy("$avp(old)","$avp(new)/gd");
 ...
 
-1.5.9.  avp_subst(avps, subst)
+1.5.9.  avp_copy_utf8(old_name,new_name)
+
+   Copy avp to a new name, but replace all invalid UTF-8 with
+   question marks.
+
+   Meaning of the parameters is as follows:
+     * name1 - which AVP(s) should be copied. Parameter syntax is:
+          + name = ( avp_name | avp_alias )
+     * name2 - the new name of the copied/moved AVP(s). Parameter
+       syntax is:
+          + name = ( avp_name | avp_alias )
+
+   This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
+   BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
+
+   Example 1.21. avp_copy_utf8 usage
+...
+avp_copy_utf8("$avp(unsanitized)", "$avp(utf8clean)");
+...
+
+1.5.10.  avp_subst(avps, subst)
 
    Perl/sed-like subst applied to AVPs having string value.
 
@@ -552,7 +574,7 @@ avp_copy("$avp(old)","$avp(new)/gd");
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
 
-   Example 1.21. avp_subst usage
+   Example 1.22. avp_subst usage
 ...
 # if avp 678 has a string value in e-mail format, replace the
 # domain part with the value of domain part from R-URI
@@ -570,7 +592,7 @@ avp_subst("$avp(678)/$avp(679)/g", "/(.*)@(.*)/\1@$rd/");
    applied to all of them, after the first src_avp is processed,
    it will be added in avp list and next processing will use it.
 
-1.5.10.  avp_op(name,op_value)
+1.5.11.  avp_op(name,op_value)
 
    Different integer operations with avps.
 
@@ -597,13 +619,13 @@ avp_subst("$avp(678)/$avp(679)/g", "/(.*)@(.*)/\1@$rd/");
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
 
-   Example 1.22. avp_op usage
+   Example 1.23. avp_op usage
 ...
 avp_op("$avp(678)", "add/345/g");
 avp_op("$avp(number)","sub/$avp(number2)/d");
 ...
 
-1.5.11.  is_avp_set(name)
+1.5.12.  is_avp_set(name)
 
    Check if any AVP with name is set.
 
@@ -616,13 +638,13 @@ avp_op("$avp(number)","sub/$avp(number2)/d");
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
 
-   Example 1.23. is_avp_set usage
+   Example 1.24. is_avp_set usage
 ...
 if(is_avp_set("$avp(678)"))
     log("AVP with integer id 678 exists\n");
 ...
 
-1.5.12.  avp_print()
+1.5.13.  avp_print()
 
    Prints the list with all the AVPs from memory. This is only a
    helper/debug function.
@@ -630,18 +652,18 @@ if(is_avp_set("$avp(678)"))
    This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
    BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
 
-   Example 1.24. avp_print usage
+   Example 1.25. avp_print usage
 ...
 avp_print();
 ...
 
-1.5.13.  avp_insert(avp_name, value, index)
+1.5.14.  avp_insert(avp_name, value, index)
 
    This function inserts an avp value at a certain position
    specified by the last parameter. If the index is greater than
    the count of values the value will be inserted at the end.
 
-   Example 1.25. avp_print usage
+   Example 1.26. avp_insert usage
 ...
 avp_insert("avp(20)", "$hdr(From)", 2);
 ...

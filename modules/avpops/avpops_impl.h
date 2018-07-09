@@ -138,6 +138,8 @@ int ops_delete_avp(struct sip_msg* msg,
 int ops_copy_avp(struct sip_msg* msg, struct fis_param* name1,
 								struct fis_param* name2);
 
+int ops_copy_utf8_avp(struct sip_msg* msg, struct fis_param* name1, struct fis_param* name2);
+
 int ops_pushto_avp(struct sip_msg* msg, struct fis_param* dst,
 								struct fis_param* ap);
 

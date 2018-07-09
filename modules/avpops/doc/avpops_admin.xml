@@ -800,6 +800,52 @@ avp_copy("$avp(old)","$avp(new)/gd");
 		</section>
 		<section>
 			<title>
+				<function moreinfo="none">avp_copy_utf8(old_name,new_name)
+				</function>
+			</title>
+			<para>
+			Copy avp to a new name, but replace all invalid UTF-8 with question marks.
+			</para>
+			<para>Meaning of the parameters is as follows:</para>
+			<itemizedlist>
+			<listitem>
+				<para><emphasis>name1</emphasis> - which AVP(s) should be
+				copied.
+				Parameter syntax is:
+				<itemizedlist>
+					<listitem><para><emphasis>
+					name = ( avp_name | avp_alias )
+					</emphasis></para></listitem>
+				</itemizedlist>
+				</para>
+			</listitem>
+			<listitem>
+				<para><emphasis>name2</emphasis> - the new name of the
+				copied/moved AVP(s).
+				Parameter syntax is:
+				<itemizedlist>
+					<listitem><para><emphasis>
+					name = ( avp_name | avp_alias )
+					</emphasis></para></listitem>
+				</itemizedlist>
+				</para>
+			</listitem>
+			</itemizedlist>
+			<para>
+			This function can be used from REQUEST_ROUTE, FAILURE_ROUTE,
+			BRANCH_ROUTE, LOCAL_ROUTE and ONREPLY_ROUTE.
+			</para>
+			<example>
+				<title><function>avp_copy_utf8</function> usage</title>
+				<programlisting format="linespecific">
+...
+avp_copy_utf8("$avp(unsanitized)", "$avp(utf8clean)");
+...
+				</programlisting>
+			</example>
+		</section>
+		<section>
+			<title>
 				<function moreinfo="none">avp_subst(avps, subst)</function>
 			</title>
 			<para>
@@ -1028,7 +1074,7 @@ avp_print();
 				the value will be inserted at the end.
 			</para>
 			<example>
-				<title><function>avp_print</function> usage</title>
+				<title><function>avp_insert</function> usage</title>
 				<programlisting format="linespecific">
 ...
 avp_insert("avp(20)", "$hdr(From)", 2);
