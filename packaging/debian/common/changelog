@@ -1,4 +1,13 @@
-opensips (1.11.11+3gn<VERSION>-1+deb9) stretch; urgency=low
+opensips (1.11.11+4gn<VERSION>-1+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Add initial avp_copy_utf8() method to copy unsafe utf-8 into
+    sanitized utf-8 clean values.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Tue, 10 Jul 2018 12:17:40 +0000
+
+
+opensips (1.11.11+3gn1e4e2888-1+deb9) stretch; urgency=low
 
   * New GN build.
   * Do delete opensips_pua table on startup (against replication issues);
