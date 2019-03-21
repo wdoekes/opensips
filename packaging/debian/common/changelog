@@ -1,4 +1,13 @@
-opensips (1.11.11+4gn<VERSION>-1+deb9) stretch; urgency=low
+opensipsold (1.11.11+5gn<VERSION>+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Rename opensips to opensipsold so we can install a newer version
+    alongside it.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Thu, 21 Mar 2019 10:00:17 +0100
+
+
+opensips (1.11.11+4gnb69eb72f-1+deb9) stretch; urgency=low
 
   * New GN build.
   * Add initial avp_copy_utf8() method to copy unsafe utf-8 into

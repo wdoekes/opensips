@@ -450,6 +450,7 @@ deb-%:
 	rm -rf debian
 	# dpkg-source cannot use links for debian source
 	cp -r packaging/debian/$(@:deb-%=%) debian
+	sed -i -e 's/<VERSION>/$(shell git log -1 --format=%h)/' debian/changelog
 	dpkg-buildpackage -us -uc -sa -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
 	rm -rf debian
 
@@ -865,27 +866,27 @@ install-man: $(man-prefix)/$(man-dir)/man8 $(man-prefix)/$(man-dir)/man5
 			-e "s#/usr/sbin/#$(bin-target)#g" \
 			-e "s#/usr/lib/$(NAME)/modules/#$(modules-target)#g" \
 			-e "s#/usr/share/doc/$(NAME)/#$(doc-target)#g" \
-			< $(NAME).8 >  $(man-prefix)/$(man-dir)/man8/$(NAME).8
-		chmod 644  $(man-prefix)/$(man-dir)/man8/$(NAME).8
+			< $(NAME).8 >  $(man-prefix)/$(man-dir)/man8/$(NAME)old.8
+		chmod 644  $(man-prefix)/$(man-dir)/man8/$(NAME)old.8
 		sed -e "s#/etc/$(NAME)/$(NAME)\.cfg#$(cfg-target)$(NAME).cfg#g" \
 			-e "s#/usr/sbin/#$(bin-target)#g" \
 			-e "s#/usr/lib/$(NAME)/modules/#$(modules-target)#g" \
 			-e "s#/usr/share/doc/$(NAME)/#$(doc-target)#g" \
-			< $(NAME).cfg.5 >  $(man-prefix)/$(man-dir)/man5/$(NAME).cfg.5
-		chmod 644  $(man-prefix)/$(man-dir)/man5/$(NAME).cfg.5
+			< $(NAME).cfg.5 >  $(man-prefix)/$(man-dir)/man5/$(NAME)old.cfg.5
+		chmod 644  $(man-prefix)/$(man-dir)/man5/$(NAME)old.cfg.5
 		sed -e "s#/etc/$(NAME)/$(NAME)\.cfg#$(cfg-target)$(NAME).cfg#g" \
 			-e "s#/usr/sbin/#$(bin-target)#g" \
 			-e "s#/usr/lib/$(NAME)/modules/#$(modules-target)#g" \
 			-e "s#/usr/share/doc/$(NAME)/#$(doc-target)#g" \
-			< scripts/opensipsctl.8 > $(man-prefix)/$(man-dir)/man8/opensipsctl.8
-		chmod 644  $(man-prefix)/$(man-dir)/man8/opensipsctl.8
+			< scripts/opensipsctl.8 > $(man-prefix)/$(man-dir)/man8/opensipsoldctl.8
+		chmod 644  $(man-prefix)/$(man-dir)/man8/opensipsoldctl.8
 		sed -e "s#/etc/$(NAME)/$(NAME)\.cfg#$(cfg-target)$(NAME).cfg#g" \
 			-e "s#/usr/sbin/#$(bin-target)#g" \
 			-e "s#/usr/lib/$(NAME)/modules/#$(modules-target)#g" \
 			-e "s#/usr/share/doc/$(NAME)/#$(doc-target)#g" \
 			< utils/opensipsunix/opensipsunix.8 > \
-			$(man-prefix)/$(man-dir)/man8/opensipsunix.8
-		chmod 644  $(man-prefix)/$(man-dir)/man8/opensipsunix.8
+			$(man-prefix)/$(man-dir)/man8/opensipsoldunix.8
+		chmod 644  $(man-prefix)/$(man-dir)/man8/opensipsoldunix.8
 
 install-modules-docbook: $(doc-prefix)/$(doc-dir)
 	-@for r in $(modules_basenames) "" ; do \
