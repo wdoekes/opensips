@@ -34,3 +34,6 @@ out
 log
 *.log
 *.html
+
+# docker build
+/Docker.out

@@ -1,3 +1,10 @@
+opensips (2.4.5-1<VERSION>) stable; urgency=low
+
+  * Use docker build, based on Jasper Hafkenscheid build.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Wed, 24 Apr 2019 09:34:36 +0200
+
+
 opensips (2.4.5-1) stable; urgency=low
 
   * Minor Public Release.
