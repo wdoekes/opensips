@@ -1,8 +1,10 @@
-opensips (2.4.5-1<VERSION>) stable; urgency=low
+opensips (2.4.5-2<VERSION>) stable; urgency=low
 
   * Use docker build, based on Jasper Hafkenscheid build.
+  * Fix SSL issues on Debian/Stretch, see:
+    https://github.com/OpenSIPS/opensips/issues/1590
 
- -- Walter Doekes <wjdoekes@osso.nl>  Wed, 24 Apr 2019 09:34:36 +0200
+ -- Walter Doekes <wjdoekes@osso.nl>  Wed, 24 Apr 2019 11:34:23 +0200
 
 
 opensips (2.4.5-1) stable; urgency=low
