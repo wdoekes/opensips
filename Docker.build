@@ -1,0 +1,62 @@
+#!/bin/bash
+cd "$(dirname "$0")"  # jump to curdir
+
+set -euo pipefail
+
+# Add something recognisable.
+version_infix=+gn   # start with "+" to make it sort after NUM
+# Build for stretch.
+version_suffix=~d9  # add <stretch-version> as suffix
+oscodename=stretch
+
+if git status --porcelain | grep -v '^??' | grep -q ''; then
+    echo "Git dir not clean. Please commit first" >&2
+    exit 1
+fi
+
+# Get current version from changelog; will contain -<VERSION>.
+changelogversion=$(sed -e '1!d;s/.*(//;s/).*//' packaging/debian/changelog)
+if [[ "$changelogversion" != *'<VERSION>' ]]; then
+    echo "Expected changelogversion to end with <VERSION>" >&2
+    exit 1
+fi
+changelogversion=${changelogversion:0:-9}  # sans "<VERSION>"
+
+# Get current version from git.
+gitversion=$(git describe --tags --dirty)  # should not be dirty!
+if [[ "${gitversion%%-*}" != "${changelogversion%%-*}" ]]; then
+    echo "Mismatching minor versions $gitversion vs. $changelogversion" >&2
+    exit 1
+fi
+
+# Reassemble buildversion from changelogversion and gitversion.
+gitversion=$(echo ${gitversion#*-} | sed -e 's/-/~/g')  # no '-' allowed
+buildversion=${changelogversion}${version_infix}${gitversion}${version_suffix}
+# "2.4.5-1+gn3~HASH~d9" where "3~HASH" comes from gitversion
+# We don't allow any dashes after the first, because the `make deb` will
+# chop it there when it searched for the upversion.
+#buildversion=2.4.5-1+gn1~g1eaeafd~d9
+
+# Split version again and alter (docker doesn't accept all chars).
+upversion=$(echo "$buildversion" | sed -e 's/-.*//;s/^[0-9]*://')
+debepoch=$(echo "$buildversion" | sed -e '/^[0-9]*:/!d;s/:.*/:/')
+debversion=$(echo "$buildversion" | sed -e 's/[^-]*-//')
+dockname="$(basename $(pwd))"
+dockversion=$(echo "$buildversion" | sed -e 's/^[0-9]*://;s/[^A-Za-z0-9.-]/_/g')
+
+# Build.
+docker build --pull \
+    --build-arg oscodename=$oscodename \
+    --build-arg upversion=$upversion \
+    --build-arg debepoch=$debepoch \
+    --build-arg debversion=$debversion \
+    -t local/$dockname:$dockversion -f Dockerfile . || exit 1
+
+# Export the compiled packages.
+outdir=Docker.out/${dockname}_${buildversion}
+mkdir -p "$outdir"
+docker run --rm --name $dockname local/$dockname:$dockversion \
+    sh -c "cd /usr/src && tar -c --exclude=${dockname}-${upversion} *" |
+    tar -xvC "$outdir"
+
+echo "Packages are copied to: $outdir"

@@ -1,0 +1,5 @@
+.dockerignore
+.git
+Docker.build
+Docker.out
+Dockerfile
