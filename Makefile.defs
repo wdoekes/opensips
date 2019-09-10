@@ -58,7 +58,8 @@ makefile_defs=1
 export makefile_defs
 
 # main binary name
-MAIN_NAME=opensips
+# VG: adjusted from opensips to opensipsold
+MAIN_NAME=opensipsold
 
 #version number
 VERSION = 1
