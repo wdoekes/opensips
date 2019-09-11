@@ -406,10 +406,12 @@ bin:
 
 .PHONY: deb
 deb:
-	rm -f debian
-	ln -sf packaging/debian
+	rm -rf debian
+	# dpkg-source cannot use links for debian source
+	cp -r packaging/debian debian
+	sed -i -e 's/<VERSION>/$(shell git describe --tags | sed -e 's/-/+/;s/-g/vg/')/' debian/changelog
 	dpkg-buildpackage -us -uc -sa -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
-	rm -f debian
+	rm -rf debian
 
 .PHONY: deb-lenny
 deb-lenny:
