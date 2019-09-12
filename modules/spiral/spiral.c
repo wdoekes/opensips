@@ -44,6 +44,15 @@
 
 #include "../rr/api.h"
 
+#if 0
+#undef LM_DBG
+#define LM_DBG LM_WARN
+#undef LM_INFO
+#define LM_INFO LM_WARN
+#undef LM_NOTICE
+#define LM_NOTICE LM_WARN
+#endif
+
 static int mod_init(void);
 
 static struct rr_binds d_rrb;
@@ -173,7 +182,7 @@ static int spiral_get_param_value(str *in, const str *name, str *value)
 }
 
 /* Return 1 if the packet is from the CALLER to CALLEE. */
-static inline int spiral_direction_downstream(struct sip_msg *msg)
+static int spiral_direction_downstream(struct sip_msg *msg)
 {
 	rr_t *rr;
 	struct sip_uri puri;
@@ -238,7 +247,7 @@ static int spiral_needs_unmangling(struct sip_msg *msg)
 	return 0;
 }
 
-int spiral_mangle_callid(struct sip_msg *msg)
+static int spiral_mangle_callid(struct sip_msg *msg)
 {
 	struct lump *del;
 	str new_callid;
@@ -280,7 +289,7 @@ int spiral_mangle_callid(struct sip_msg *msg)
 	return 0;
 }
 
-int spiral_unmangle_callid(struct sip_msg *msg)
+static int spiral_unmangle_callid(struct sip_msg *msg)
 {
 	struct lump *del;
 	str new_callid;
@@ -321,7 +330,7 @@ static int spiral_add_cookie(struct sip_msg *msg, const str *cookie_header_value
 {
 	struct lump* anchor;
 	int pos;
-	str h, v;
+	str h, v, u;
 
 	/* Add header cookie */
 	h.len = cookie_header_key.len + 2 + cookie_header_value->len + CRLF_LEN;
@@ -382,31 +391,78 @@ static int spiral_add_cookie(struct sip_msg *msg, const str *cookie_header_value
 		return -1;
 	}
 
-	LM_DBG("spiral: added cookie in header/Via %.*s [%.*s]\n",
-			cookie_header_key.len, cookie_header_key.s, h.len, h.s);
+	/* Add RURI cookie, for INVITEs only.
+	 * By storing the cookie in the RURI cookie, the transaction layer
+	 * keeps this cookie, and we can read it from (locally generated)
+	 * hop-by-hop ACKs, where we don't have any other cookies. */
+	if (msg->first_line.type == SIP_REQUEST &&
+			get_cseq(msg)->method_id == METHOD_INVITE) {
+		const char *ruriend = (
+			msg->first_line.u.request.uri.s + msg->first_line.u.request.uri.len);
+		anchor = anchor_lump(msg, ruriend - msg->buf, 0, 0);
+		if (anchor == 0) {
+			LM_ERR("can't get RURI anchor\n");
+			return -1;
+		}
+
+		u.len = v.len;
+		u.s = (char*)pkg_malloc(u.len + 1);
+		if (u.s == 0) {
+			LM_ERR("no more pkg mem\n");
+			return -1;
+		}
+		/* copy the Via cookie, which looks the same */
+		memcpy(u.s, v.s, v.len + 1); /* including zero */
+		if (insert_new_lump_after(anchor, u.s, u.len, 0) == 0) {
+			LM_ERR("can't insert RURI lump\n");
+			pkg_free(h.s);
+			return -1;
+		}
+	}
+
+	LM_DBG("spiral: added cookie in header/Via/RURI %.*s [%.*s]\n",
+		cookie_header_key.len, cookie_header_key.s, v.len, v.s);
 	return 0;
 }
 
-static void spiral_del_cookie(struct sip_msg *msg)
+static void spiral_extract_header_cookie(struct sip_msg *msg, str *dest, str *cseq_method)
 {
+	/* Get and remove header cookie */
 	struct lump* anchor;
 	struct hdr_field *hf;
-	struct via_param *p;
 
-	/* Remove cooke from headers */
 	for (hf = msg->headers; hf; hf = hf->next) {
 		/* strncasecmp not needed, we put the cookie there with the
 		 * same case */
 		if (hf->name.len == cookie_header_key.len &&
 				memcmp(hf->name.s, cookie_header_key.s,
 					cookie_header_key.len) == 0) {
-			anchor = del_lump(msg, hf->name.s-msg->buf, hf->len, 0);
+			if (dest->s[0] == '.') {
+				/* Copy at most the input length. */
+				int bytes = (
+					(dest->len - 1 > hf->body.len) ?
+					hf->body.len : (dest->len - 1));
+				dest->s[0] = 'h';
+				memcpy(dest->s + 1, hf->body.s, bytes);
+				LM_DBG("spiral: %.*s/%d: got header %db cookie %.*s [%.*s]\n",
+					cseq_method->len, cseq_method->s, msg->first_line.type,
+					bytes, cookie_header_key.len,
+					cookie_header_key.s, dest->len, dest->s);
+			}
+			anchor = del_lump(msg, hf->name.s - msg->buf, hf->len, 0);
 			if (anchor == 0) {
 				LM_ERR("spiral: unable to delete header cookie\n");
 			}
 			break;
 		}
 	}
+}
+
+static void spiral_extract_via_cookie(struct sip_msg *msg, str *dest, str *cseq_method)
+{
+	/* Get and remove Via cookie */
+	struct lump* anchor;
+	struct via_param *p;
 
 	/* Remove cookie from Via as well */
 	if (msg->via1 == NULL) {
@@ -418,7 +474,7 @@ static void spiral_del_cookie(struct sip_msg *msg)
 	}
 
 	/* For requests, it is in via2, for replies it is in via1 */
-	if (msg->first_line.type == SIP_REQUEST) {
+	if (msg->first_line.type == SIP_REQUEST && msg->via2 != NULL) {
 		/* There must be a via2, if there wasn't a via1, we
 		 * wouldn't be here. And we add the via2. */
 		p = msg->via2->param_lst;
@@ -429,7 +485,19 @@ static void spiral_del_cookie(struct sip_msg *msg)
 		if (p->name.len == cookie_header_key.len &&
 				memcmp(p->name.s, cookie_header_key.s,
 					cookie_header_key.len) == 0) {
-			anchor = del_lump(msg, p->start-msg->buf - 1, p->size + 1, 0);
+			if (dest->s[0] == '.') {
+				/* Copy at most the input length. */
+				int bytes = (
+					(dest->len - 1 > p->value.len) ?
+					p->value.len : (dest->len - 1));
+				dest->s[0] = 'v';
+				memcpy(dest->s + 1, p->value.s, bytes);
+				LM_DBG("spiral: %.*s/%d: got Via %db cookie %.*s [%.*s]\n",
+					cseq_method->len, cseq_method->s, msg->first_line.type,
+					bytes, cookie_header_key.len,
+					cookie_header_key.s, dest->len, dest->s);
+			}
+			anchor = del_lump(msg, p->start - msg->buf - 1, p->size + 1, 0);
 			if (anchor == 0) {
 				LM_ERR("spiral: unable to delete Via cookie\n");
 			}
@@ -438,50 +506,79 @@ static void spiral_del_cookie(struct sip_msg *msg)
 	}
 }
 
-int spiral_get_cookie(struct sip_msg *msg, str *dest)
+static void spiral_extract_ruri_cookie(struct sip_msg *msg, str *dest, str *cseq_method)
 {
-	struct hdr_field *hf;
-	struct via_param *p;
+	/* Get and remove RURI cookie, only found in requests */
+	struct lump* anchor;
+	const char *param, *ruriend;
 
-	/* Get header cookie */
-	for (hf = msg->headers; hf; hf = hf->next) {
-		/* strncasecmp not needed, we put the cookie there with the
-		 * same case */
-		if (hf->name.len == cookie_header_key.len &&
-				memcmp(hf->name.s, cookie_header_key.s,
-					cookie_header_key.len) == 0) {
-			/* Copy at most the input length. */
-			if (dest->len > hf->body.len + 1)
-				dest->len = hf->body.len + 1;
-			dest->s[0] = 'h';
-			memcpy(dest->s + 1, hf->body.s, dest->len);
-			LM_DBG("spiral: got header cookie %.*s [%.*s]\n", cookie_header_key.len,
-					cookie_header_key.s, dest->len, dest->s);
-			return 1;
-		}
+	if (msg->first_line.type != SIP_REQUEST) {
+		return;
 	}
-	LM_DBG("spiral: no header cookie %.*s found\n",
-			cookie_header_key.len, cookie_header_key.s);
 
-	/* Get Via cookie if no header cookie can be found */
-	for (p = msg->via1->param_lst; p; p = p->next) {
-		if (p->name.len == cookie_header_key.len &&
-				memcmp(p->name.s, cookie_header_key.s,
-					cookie_header_key.len) == 0) {
+	param = msg->first_line.u.request.uri.s;
+	ruriend = (
+		param + msg->first_line.u.request.uri.len -
+		cookie_header_key.len - 3 /* =XX */);
+
+	while (1) {
+		const char *rp;
+		for (; param < ruriend && *param != ';'; ++param)
+			;
+		if (param >= ruriend)
+			break;
+		rp = param + 1;
+		if (strncmp(rp, cookie_header_key.s, cookie_header_key.len) == 0 &&
+				rp[cookie_header_key.len] == '=') {
+			int bytes;
+			rp += cookie_header_key.len + 1;
 			/* Copy at most the input length. */
-			if (dest->len > p->value.len + 1)
-				dest->len = p->value.len + 1;
-			dest->s[0] = 'v';
-			memcpy(dest->s + 1, p->value.s, dest->len + 1);
-			LM_DBG("spiral: got Via cookie %.*s [%.*s]\n", cookie_header_key.len,
+			bytes = (msg->first_line.u.request.uri.len -
+				(rp - msg->first_line.u.request.uri.s));
+			if (bytes > dest->len - 1)
+				bytes = dest->len - 1;
+			if (dest->s[0] == '.') {
+				dest->s[0] = 'u';
+				memcpy(dest->s + 1, rp, bytes);
+				LM_DBG("spiral: %.*s/%d: got RURI %db cookie %.*s [%.*s]\n",
+					cseq_method->len, cseq_method->s, msg->first_line.type,
+					bytes, cookie_header_key.len,
 					cookie_header_key.s, dest->len, dest->s);
-			return 1;
+			}
+			anchor = del_lump(
+				msg, param - msg->buf,
+				1/*;*/ + cookie_header_key.len + 1/*=*/ + bytes/*..*/, 0);
+			if (anchor == 0) {
+				LM_ERR("spiral: unable to delete RURI cookie\n");
+			}
+			break;
 		}
+		++param;
 	}
-	LM_DBG("spiral: no Via cookie %.*s found\n",
-			cookie_header_key.len, cookie_header_key.s);
+}
 
-	return 0;
+static int spiral_extract_cookie(struct sip_msg *msg, str *dest)
+{
+	/* CSeq: is available, or we wouldn't be here */
+	str cseq_method = get_cseq(msg)->method;
+
+	/* Nothing found yet.. */
+	dest->s[0] = '.';
+
+	/* Find and remove */
+	spiral_extract_header_cookie(msg, dest, &cseq_method);
+	spiral_extract_via_cookie(msg, dest, &cseq_method);
+	spiral_extract_ruri_cookie(msg, dest, &cseq_method);
+
+	/* Nothing found? */
+	if (dest->s[0] == '.') {
+		LM_DBG("spiral: %.*s/%d: no cookie %.*s found at all\n",
+			cseq_method.len, cseq_method.s, msg->first_line.type,
+			cookie_header_key.len, cookie_header_key.s);
+		return 0;
+	}
+
+	return 1;
 }
 
 static inline char *spiral_rebuild_req(struct sip_msg *msg, int *len)
@@ -498,7 +595,7 @@ static inline char *spiral_rebuild_rpl(struct sip_msg *msg, int *len)
 	return ret;
 }
 
-int spiral_parse_msg(struct sip_msg *msg)
+static int spiral_parse_msg(struct sip_msg *msg)
 {
 	if (parse_msg(msg->buf, msg->len, msg) != 0) {
 		LM_ERR("invalid SIP msg\n");
@@ -520,15 +617,16 @@ int spiral_parse_msg(struct sip_msg *msg)
 
 #define MSG_SKIP_BITMASK (METHOD_REGISTER|METHOD_PUBLISH|METHOD_OPTIONS| \
 		METHOD_NOTIFY|METHOD_SUBSCRIBE)
-int spiral_skip_msg(struct sip_msg *msg)
+static int spiral_skip_msg(struct sip_msg *msg)
 {
-	if (msg->cseq == NULL || get_cseq(msg) == NULL) {
+	struct cseq_body *cseq;
+	if (msg->cseq == NULL || (cseq = get_cseq(msg)) == NULL) {
 		LM_ERR("failed to parse CSEQ header\n");
 		return -1; /* error */
 	}
-	if ((get_cseq(msg)->method_id) & MSG_SKIP_BITMASK) {
+	if (cseq->method_id & MSG_SKIP_BITMASK) {
 		LM_DBG("skipping method %d for spiral callid mangling\n",
-				get_cseq(msg)->method_id);
+			cseq->method_id);
 		return 1; /* skip */
 	}
 	return 0;
@@ -573,13 +671,13 @@ static int spiral_pre_raw(str *data)
 #if 0
 	if (msg.first_line.type == SIP_REQUEST) {
 		LM_DBG("%.*s %.*s %.*s: R", msg.callid->body.len, msg.callid->body.s,
-				get_cseq(&msg)->number.len, get_cseq(&msg)->number.s,
-				get_cseq(&msg)->method.len, get_cseq(&msg)->method.s);
+			get_cseq(&msg)->number.len, get_cseq(&msg)->number.s,
+			get_cseq(&msg)->method.len, get_cseq(&msg)->method.s);
 	} else {
 		LM_DBG("%.*s %.*s %.*s: %.*s", msg.callid->body.len, msg.callid->body.s,
-				get_cseq(&msg)->number.len, get_cseq(&msg)->number.s,
-				get_cseq(&msg)->method.len, get_cseq(&msg)->method.s,
-				msg.first_line.u.reply.status.len, msg.first_line.u.reply.status.s);
+			get_cseq(&msg)->number.len, get_cseq(&msg)->number.s,
+			get_cseq(&msg)->method.len, get_cseq(&msg)->method.s,
+			msg.first_line.u.reply.status.len, msg.first_line.u.reply.status.s);
 	}
 #endif
 
@@ -603,7 +701,7 @@ static int spiral_pre_raw(str *data)
 		if (in_dialog && !is_downstream) {
 			if (!spiral_needs_unmangling(&msg)) {
 				LM_ERR("expected the need for %.*s request callid %.*s "
-					"unmangling!\n", 
+					"unmangling!\n",
 					msg.first_line.u.request.method.len,
 					msg.first_line.u.request.method.s,
 					msg.callid->body.len, msg.callid->body.s);
@@ -669,9 +767,8 @@ static int spiral_post_raw(str *data)
 		goto done;
 	}
 
-	if (spiral_get_cookie(&msg, &cookie)) {
-		spiral_del_cookie(&msg);
-	}
+	/* Get and delete cookies on outbound, so they're not visible on the outside */
+	spiral_extract_cookie(&msg, &cookie);
 
 	if (msg.first_line.type == SIP_REQUEST) {
 		int in_dialog;
