@@ -34,6 +34,8 @@ include /usr/share/dpatch/dpatch.make
 # Disabled by default due to license issues, set to non-void to enable
 TLS=1
 
+# Keep in sync with Makefile.defs MAIN_NAME as opensips or opensipsold:
+MAIN_NAME = opensips
 
 # List of all debian module packages we will build
 # Used to index the make variable below, which has details about each package
@@ -55,86 +57,86 @@ endif
 # FOO_MODULES is the directory name within modules/ that belongs to the package
 # FOO_MOD_PATH is same as FOO_MODULES, but with 'modules/' prepended
 
-MYSQL_PKGNAME = opensipsold-mysql-module
+MYSQL_PKGNAME = $(MAIN_NAME)-mysql-module
 MYSQL_MODULES = db_mysql
 MYSQL_MOD_PATH=$(addprefix modules/, $(MYSQL_MODULES))
-POSTGRES_PKGNAME = opensipsold-postgres-module
+POSTGRES_PKGNAME = $(MAIN_NAME)-postgres-module
 POSTGRES_MODULES = db_postgres
 POSTGRES_MOD_PATH=$(addprefix modules/, $(POSTGRES_MODULES))
-UNIXODBC_PKGNAME = opensipsold-unixodbc-module
+UNIXODBC_PKGNAME = $(MAIN_NAME)-unixodbc-module
 UNIXODBC_MODULES=db_unixodbc
 UNIXODBC_MOD_PATH=$(addprefix modules/, $(UNIXODBC_MODULES))
-JABBER_PKGNAME = opensipsold-jabber-module
+JABBER_PKGNAME = $(MAIN_NAME)-jabber-module
 JABBER_MODULES = jabber
 JABBER_MOD_PATH=$(addprefix modules/, $(JABBER_MODULES))
-CPL_PKGNAME = opensipsold-cpl-module
+CPL_PKGNAME = $(MAIN_NAME)-cpl-module
 CPL_MODULES = cpl-c
 CPL_MOD_PATH=$(addprefix modules/, $(CPL_MODULES))
-RADIUS_PKGNAME = opensipsold-radius-modules
+RADIUS_PKGNAME = $(MAIN_NAME)-radius-modules
 RADIUS_MODULES = aaa_radius peering
 RADIUS_MOD_PATH=$(addprefix modules/, $(RADIUS_MODULES))
-PRESENCE_PKGNAME = opensipsold-presence-modules
+PRESENCE_PKGNAME = $(MAIN_NAME)-presence-modules
 PRESENCE_MODULES = presence presence_callinfo presence_dialoginfo presence_xml presence_mwi presence_xcapdiff pua pua_bla pua_dialoginfo pua_mi pua_usrloc pua_xmpp rls xcap xcap_client
 PRESENCE_MOD_PATH=$(addprefix modules/, $(PRESENCE_MODULES))
-XMLRPC_PKGNAME = opensipsold-xmlrpc-module
+XMLRPC_PKGNAME = $(MAIN_NAME)-xmlrpc-module
 XMLRPC_MODULES = mi_xmlrpc
 XMLRPC_MOD_PATH=$(addprefix modules/, $(XMLRPC_MODULES))
-PERL_PKGNAME = opensipsold-perl-modules
-PERL_PKGNAME = opensipsold-perl-modules
+PERL_PKGNAME = $(MAIN_NAME)-perl-modules
+PERL_PKGNAME = $(MAIN_NAME)-perl-modules
 PERL_MODULES = perl db_perlvdb
 PERL_MOD_PATH=$(addprefix modules/, $(PERL_MODULES))
-SNMPSTATS_PKGNAME = opensipsold-snmpstats-module
+SNMPSTATS_PKGNAME = $(MAIN_NAME)-snmpstats-module
 SNMPSTATS_MODULES = snmpstats
 SNMPSTATS_MOD_PATH=$(addprefix modules/, $(SNMPSTATS_MODULES))
-XMPP_PKGNAME = opensipsold-xmpp-module
+XMPP_PKGNAME = $(MAIN_NAME)-xmpp-module
 XMPP_MODULES = xmpp
 XMPP_MOD_PATH=$(addprefix modules/, $(XMPP_MODULES))
-CROUTE_PKGNAME = opensipsold-carrierroute-module
+CROUTE_PKGNAME = $(MAIN_NAME)-carrierroute-module
 CROUTE_MODULES = carrierroute
 CROUTE_MOD_PATH=$(addprefix modules/, $(CROUTE_MODULES))
-#BERKELEY_PKGNAME = opensipsold-berkeley-module
+#BERKELEY_PKGNAME = $(MAIN_NAME)-berkeley-module
 #BERKELEY_MODULES = db_berkeley
 #BERKELEY_MOD_PATH=$(addprefix modules/, $(BERKELEY_MODULES))
-LDAP_PKGNAME = opensipsold-ldap-modules
+LDAP_PKGNAME = $(MAIN_NAME)-ldap-modules
 LDAP_MODULES = ldap h350
 LDAP_MOD_PATH=$(addprefix modules/, $(LDAP_MODULES))
-GEOIP_PKGNAME = opensipsold-geoip-module
+GEOIP_PKGNAME = $(MAIN_NAME)-geoip-module
 GEOIP_MODULES = mmgeoip
 GEOIP_MOD_PATH=$(addprefix modules/, $(GEOIP_MODULES))
-REGEX_PKGNAME = opensipsold-regex-module
+REGEX_PKGNAME = $(MAIN_NAME)-regex-module
 REGEX_MODULES = regex
 REGEX_MOD_PATH=$(addprefix modules/, $(REGEX_MODULES))
-IDENTITY_PKGNAME = opensipsold-identity-module
+IDENTITY_PKGNAME = $(MAIN_NAME)-identity-module
 IDENTITY_MODULES = identity
 IDENTITY_MOD_PATH=$(addprefix modules/, $(IDENTITY_MODULES))
-B2BUA_PKGNAME = opensipsold-b2bua-module
+B2BUA_PKGNAME = $(MAIN_NAME)-b2bua-module
 B2BUA_MODULES = b2b_entities b2b_logic
 B2BUA_MOD_PATH=$(addprefix modules/, $(B2BUA_MODULES))
-DBHTTP_PKGNAME = opensipsold-dbhttp-module
+DBHTTP_PKGNAME = $(MAIN_NAME)-dbhttp-module
 DBHTTP_MODULES = db_http
 DBHTTP_MOD_PATH=$(addprefix modules/, $(DBHTTP_MODULES))
-DIALPLAN_PKGNAME = opensipsold-dialplan-module
+DIALPLAN_PKGNAME = $(MAIN_NAME)-dialplan-module
 DIALPLAN_MODULES = dialplan
 DIALPLAN_MOD_PATH=$(addprefix modules/, $(DIALPLAN_MODULES))
-MEMCACHED_PKGNAME = opensipsold-memcached-module
+MEMCACHED_PKGNAME = $(MAIN_NAME)-memcached-module
 MEMCACHED_MODULES = cachedb_memcached
 MEMCACHED_MOD_PATH=$(addprefix modules/, $(MEMCACHED_MODULES))
-REDIS_PKGNAME = opensipsold-redis-module
+REDIS_PKGNAME = $(MAIN_NAME)-redis-module
 REDIS_MODULES = cachedb_redis
 REDIS_MOD_PATH=$(addprefix modules/, $(REDIS_MODULES))
-CASSANDRA_PKGNAME = opensipsold-cassandra-module
+CASSANDRA_PKGNAME = $(MAIN_NAME)-cassandra-module
 CASSANDRA_MODULES = cachedb_cassandra
 CASSANDRA_MOD_PATH=$(addprefix modules/, $(CASSANDRA_MODULES))
-RABBITMQ_PKGNAME = opensipsold-rabbitmq-module
+RABBITMQ_PKGNAME = $(MAIN_NAME)-rabbitmq-module
 RABBITMQ_MODULES = event_rabbitmq
 RABBITMQ_MOD_PATH=$(addprefix modules/, $(RABBITMQ_MODULES))
-LUA_PKGNAME = opensipsold-lua-module
+LUA_PKGNAME = $(MAIN_NAME)-lua-module
 LUA_MODULES = lua
 LUA_MOD_PATH=$(addprefix modules/, $(LUA_MODULES))
-HTTP_PKGNAME = opensipsold-http-modules
+HTTP_PKGNAME = $(MAIN_NAME)-http-modules
 HTTP_MODULES = httpd mi_http pi_http
 HTTP_MOD_PATH=$(addprefix modules/, $(HTTP_MODULES))
-JSON_PKGNAME = opensipsold-json-module
+JSON_PKGNAME = $(MAIN_NAME)-json-module
 JSON_MODULES = json
 JSON_MOD_PATH=$(addprefix modules/, $(JSON_MODULES))
 
@@ -144,8 +146,8 @@ JSON_MOD_PATH=$(addprefix modules/, $(JSON_MODULES))
 export $(foreach pkg,$(ALL_MODPKG_LIST),$(pkg)_PKGNAME $(pkg)_MODULES $(pkg)_MOD_PATH)
 
 # not needed anymore
-#ALL_PACKAGES = opensipsold $(foreach pkg,$(ALL_MODPKG_LIST),$($(pkg)_PKGNAME)) \
-#	opensipsold-console
+#ALL_PACKAGES = $(MAIN_NAME) $(foreach pkg,$(ALL_MODPKG_LIST),$($(pkg)_PKGNAME)) \
+#	$(MAIN_NAME)-console
 ALL_MODULES = $(foreach pkg,$(ALL_MODPKG_LIST),$($(pkg)_MODULES))
 BUILD_MODULE_PATHS = $(foreach pkg,$(BUILD_MODPKG_LIST),$($(pkg)_MOD_PATH))
 
@@ -191,14 +193,14 @@ build-stamp: patch-stamp configure-stamp
 
 	# Add here commands to compile the package.
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 app \
-	  modules skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/opensipsold/ \
-	  data-dir=share/opensipsold lib-dir=lib/opensipsold modules-dir=lib/opensipsold/modules
+	  modules skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/$(MAIN_NAME)/ \
+	  data-dir=share/$(MAIN_NAME) lib-dir=lib/$(MAIN_NAME) modules-dir=lib/$(MAIN_NAME)/modules
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 \
-	  modules modules="$(BUILD_MODULE_PATHS)" cfg-target=/etc/opensipsold/ \
-	  data-dir=share/opensipsold lib-dir=lib/opensipsold modules-dir=lib/opensipsold/modules
+	  modules modules="$(BUILD_MODULE_PATHS)" cfg-target=/etc/$(MAIN_NAME)/ \
+	  data-dir=share/$(MAIN_NAME) lib-dir=lib/$(MAIN_NAME) modules-dir=lib/$(MAIN_NAME)/modules
 	# generate the utils db_berkeley
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) utils include_modules="db_berkeley" \
-	  data-dir=share/opensipsold lib-dir=lib/opensipsold modules-dir=lib/opensipsold/modules
+	  data-dir=share/$(MAIN_NAME) lib-dir=lib/$(MAIN_NAME) modules-dir=lib/$(MAIN_NAME)/modules
 
 	touch build-stamp
 
@@ -239,18 +241,18 @@ install: build
 	# opensips base package
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) install-app \
 		install-modules-all skip_modules="$(NONCORE_MODULES)" \
-		basedir=$(CURDIR)/debian/opensipsold \
+		basedir=$(CURDIR)/debian/$(MAIN_NAME) \
 		prefix=/usr \
-		cfg-prefix=$(CURDIR)/debian/opensipsold \
-		cfg-target=/etc/opensipsold/ \
-		cfg-dir=etc/opensipsold/ \
-		data-dir=share/opensipsold \
-		doc-dir=share/doc/opensipsold \
-		lib-dir=lib/opensipsold \
-		modules-dir=lib/opensipsold/modules
+		cfg-prefix=$(CURDIR)/debian/$(MAIN_NAME) \
+		cfg-target=/etc/$(MAIN_NAME)/ \
+		cfg-dir=etc/$(MAIN_NAME)/ \
+		data-dir=share/$(MAIN_NAME) \
+		doc-dir=share/doc/$(MAIN_NAME) \
+		lib-dir=lib/$(MAIN_NAME) \
+		modules-dir=lib/$(MAIN_NAME)/modules
 
-	find $(CURDIR)/debian/opensipsold/etc/opensipsold -type f -exec chmod -x {} \;
-	sed -i -e "s/^PATH.*//" $(CURDIR)/debian/opensipsold/usr/sbin/opensipsoldctl
+	find $(CURDIR)/debian/$(MAIN_NAME)/etc/$(MAIN_NAME) -type f -exec chmod -x {} \;
+	sed -i -e "s/^PATH.*//" $(CURDIR)/debian/$(MAIN_NAME)/usr/sbin/$(MAIN_NAME)ctl
 
 	set -e;\
 	for pkg in $(BUILD_MODPKG_LIST) ; do\
@@ -263,20 +265,20 @@ install: build
 		basedir=$(CURDIR)/debian/$${pkg_pkgname} \
 		prefix=/usr \
 		cfg-prefix=$(CURDIR)/debian/$${pkg_pkgname} \
-		cfg-target=/etc/opensipsold/ \
-		data-dir=share/opensipsold \
+		cfg-target=/etc/$(MAIN_NAME)/ \
+		data-dir=share/$(MAIN_NAME) \
 		doc-dir=share/doc/$${pkg_pkgname} \
-		lib-dir=lib/opensipsold \
-		modules-dir=lib/opensipsold/modules \
+		lib-dir=lib/$(MAIN_NAME) \
+		modules-dir=lib/$(MAIN_NAME)/modules \
 		;\
 	done
 
 	# install only the opensips console tool
 	$(MAKE) install-console \
-		basedir=$(CURDIR)/debian/opensipsold-console \
+		basedir=$(CURDIR)/debian/$(MAIN_NAME)-console \
 		prefix=/usr \
-		lib-dir=lib/opensipsold \
-		modules-dir=lib/opensipsold/modules
+		lib-dir=lib/$(MAIN_NAME) \
+		modules-dir=lib/$(MAIN_NAME)/modules
 
 	# the modules packages all ship an empty /usr/sbin directory. clean it up
 	# not needed anymore with makefile restructuring
@@ -298,7 +300,7 @@ binary-arch: build install
 	dh_installinfo
 	dh_installchangelogs
 	dh_link
-	dh_strip --dbg-package=opensipsold-dbg
+	dh_strip --dbg-package=$(MAIN_NAME)-dbg
 	dh_compress
 	dh_fixperms
 	dh_installdeb
