@@ -193,7 +193,7 @@ build-stamp: patch-stamp configure-stamp
 
 	# Add here commands to compile the package.
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 app \
-	  modules skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/$(MAIN_NAME)/ \
+	  modules include_modules= skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/$(MAIN_NAME)/ \
 	  data-dir=share/$(MAIN_NAME) lib-dir=lib/$(MAIN_NAME) modules-dir=lib/$(MAIN_NAME)/modules
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 \
 	  modules modules="$(BUILD_MODULE_PATHS)" cfg-target=/etc/$(MAIN_NAME)/ \
@@ -240,7 +240,7 @@ install: build
 	# Add here commands to install the package into debian/opensips
 	# opensips base package
 	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) install-app \
-		install-modules-all skip_modules="$(NONCORE_MODULES)" \
+		install-modules-all include_modules= skip_modules="$(NONCORE_MODULES)" \
 		basedir=$(CURDIR)/debian/$(MAIN_NAME) \
 		prefix=/usr \
 		cfg-prefix=$(CURDIR)/debian/$(MAIN_NAME) \
