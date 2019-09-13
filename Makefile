@@ -409,7 +409,8 @@ deb:
 	rm -rf debian
 	# dpkg-source cannot use links for debian source
 	cp -r packaging/debian debian
-	sed -i -e 's/<VERSION>/$(shell git describe --tags | sed -e 's/-/+/;s/-g/vg/')/' debian/changelog
+	sed -i -e '1s/<VERSION>/$(shell git describe --tags | sed -e 's/-/+/;s/-g/vg/')/' debian/changelog
+	sed -i -e '1s/<RELEASE>/stable/' debian/changelog
 	dpkg-buildpackage -us -uc -sa -rfakeroot -tc $(DEBBUILD_EXTRA_OPTIONS)
 	rm -rf debian
 

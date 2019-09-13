@@ -38,10 +38,11 @@ TLS=1
 # List of all debian module packages we will build
 # Used to index the make variable below, which has details about each package
 ALL_MODPKG_LIST := \
-	MYSQL POSTGRES UNIXODBC JABBER CPL RADIUS \
+	MYSQL POSTGRES UNIXODBC JABBER CPL \
 	PRESENCE XMLRPC PERL SNMPSTATS XMPP CROUTE BERKELEY LDAP \
 	GEOIP REGEX IDENTITY B2BUA DBHTTP DIALPLAN MEMCACHED JSON \
-	REDIS RABBITMQ LUA HTTP
+	REDIS RABBITMQ HTTP
+# disabled: LUA RADIUS
 
 ifeq ($(BUILD_MODPKG_LIST),NONE)
 override BUILD_MODPKG_LIST :=
@@ -189,10 +190,10 @@ build-stamp: patch-stamp configure-stamp
 	dh_testdir
 
 	# Add here commands to compile the package.
-	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) app \
+	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 app \
 	  modules skip_modules="$(NONCORE_MODULES)" cfg-target=/etc/opensipsold/ \
 	  data-dir=share/opensipsold lib-dir=lib/opensipsold modules-dir=lib/opensipsold/modules
-	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) \
+	CC="$(CC)" CFLAGS="$(CFLAGS)" $(VARS) $(MAKE) -j6 FASTER=1 NICER=0 \
 	  modules modules="$(BUILD_MODULE_PATHS)" cfg-target=/etc/opensipsold/ \
 	  data-dir=share/opensipsold lib-dir=lib/opensipsold modules-dir=lib/opensipsold/modules
 	# generate the utils db_berkeley
