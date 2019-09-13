@@ -1,0 +1,10 @@
+/.dockerignore
+/.git
+/.gitignore
+/Dockerfile
+/Dockerfile.build
+/Dockerfile.out
+
+*.d
+*.o
+*.so
