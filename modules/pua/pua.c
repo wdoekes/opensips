@@ -611,7 +611,7 @@ static void hashT_clean(unsigned int ticks,void *param)
 		{
 			print_ua_pres(p);
 			LM_DBG("---\n");
-			if(p->expires -update_period < now )
+			if(p->expires < now)
 			{
 				if((p->desired_expires> p->expires + 5) ||
 						(p->desired_expires== 0 ))

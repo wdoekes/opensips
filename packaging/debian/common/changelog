@@ -1,3 +1,11 @@
+opensipsold (1.11.11+6gn<VERSION>+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Fix for pua_usrloc events that expire prematurely.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Tue, 11 Jul 2023 17:13:21 +0200
+
+
 opensipsold (1.11.11+5gn<VERSION>+deb9) stretch; urgency=low
 
   * New GN build.
