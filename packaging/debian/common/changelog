@@ -1,3 +1,11 @@
+opensipsold (1.11.11+7gn<VERSION>+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Fix that the source tar gz does not include all of .git.
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Tue, 11 Jul 2023 17:43:33 +0200
+
+
 opensipsold (1.11.11+6gn<VERSION>+deb9) stretch; urgency=low
 
   * New GN build.

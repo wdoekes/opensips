@@ -1,0 +1,17 @@
+# Maximum compatibility.
+compression = "gzip"                                                           
+# Don't include .git, .swp into the tar.                                       
+# See: dpkg-source --help for defaults.
+tar-ignore = ".git"
+tar-ignore = ".*.sw?"
+tar-ignore = "Makefile.conf"
+tar-ignore = "*.[do]"
+tar-ignore = "*.so"
+tar-ignore = "*.il"
+tar-ignore = "*.gz"
+tar-ignore = "*.bz2"
+tar-ignore = "*.tar"
+tar-ignore = "*.patch"
+tar-ignore = ".#*"
+tar-ignore = "*.swp"
+tar-ignore = "*~"
