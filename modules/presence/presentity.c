@@ -586,6 +586,7 @@ int update_presentity(struct sip_msg* msg, presentity_t* presentity, int* sent_r
 			if (result->n <= 0)
 			{
 					pa_dbf.free_result(pa_db, result);
+					result = NULL;
 					LM_ERR("No E_Tag match [%.*s]\n", presentity->etag.len,
 							presentity->etag.s);
 					if (msg && sigb.reply(msg, 412, &pu_412_rpl, 0)==-1 )
@@ -598,6 +599,7 @@ int update_presentity(struct sip_msg* msg, presentity_t* presentity, int* sent_r
 			}
 
 			pa_dbf.free_result(pa_db, result);
+			result = NULL;
 			LM_INFO("*** found in db but not in htable [%.*s]\n",
 					presentity->etag.len, presentity->etag.s);
 		}

@@ -1,3 +1,12 @@
+opensipsold (1.11.11+8gn<VERSION>+deb9) stretch; urgency=low
+
+  * New GN build.
+  * Fix incidental double free in opensips-pres, at:
+    handle_publish() -> update_presentity() -> free + free again
+
+ -- Walter Doekes <wjdoekes@osso.nl>  Tue, 15 Apr 2025 10:16:33 +0200
+
+
 opensipsold (1.11.11+7gn<VERSION>+deb9) stretch; urgency=low
 
   * New GN build.
